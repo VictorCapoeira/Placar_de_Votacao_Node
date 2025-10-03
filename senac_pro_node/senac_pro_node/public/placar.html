@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Placar - Feira de Profissões</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    <style>
+        :root {
+            --primary: #004A8D;
+            --secondary: #F7941D;
+            --tertiary: #FDC180;
+        }
+        
+        body {
+            background-color: #f8f9fa;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        .bg-primary {
+            background-color: var(--primary) !important;
+        }
+        
+        .btn-primary {
+            background-color: var(--primary);
+            border-color: var(--primary);
+        }
+        
+        .btn-primary:hover {
+            background-color: #003a70;
+            border-color: #003a70;
+        }
+        
+        .btn-secondary {
+            background-color: var(--secondary);
+            border-color: var(--secondary);
+            color: white;
+        }
+        
+        .btn-secondary:hover {
+            background-color: #e08515;
+            border-color: #e08515;
+            color: white;
+        }
+        
+        .text-secondary {
+            color: var(--secondary) !important;
+        }
+        
+        .text-tertiary {
+            color: var(--tertiary) !important;
+        }
+        
+        .podium-item {
+            transition: transform 0.3s;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        
+        .podium-item:hover {
+            transform: translateY(-5px);
+        }
+        
+        .first-place {
+            background: linear-gradient(135deg, #FFD700 0%, #FDC180 100%);
+            border: 2px solid #FFD700;
+            order: 1;
+        }
+        
+        .second-place {
+            background: linear-gradient(135deg, #C0C0C0 0%, #E0E0E0 100%);
+            border: 2px solid #C0C0C0;
+            order: 2;
+        }
+        
+        .third-place {
+            background: linear-gradient(135deg, #CD7F32 0%, #E3995A 100%);
+            border: 2px solid #CD7F32;
+            order: 3;
+        }
+        
+        .other-place {
+            background: white;
+            border-left: 4px solid var(--primary);
+        }
+        
+        .progress {
+            height: 25px;
+            border-radius: 20px;
+            overflow: hidden;
+        }
+        
+        .progress-bar {
+            background-color: var(--primary);
+        }
+        
+        .podium-number {
+            font-size: 3rem;
+            font-weight: bold;
+            color: var(--primary);
+            text-shadow: 2px 2px 0 #FFF, 
+                         -2px -2px 0 #FFF, 
+                         2px -2px 0 #FFF, 
+                         -2px 2px 0 #FFF;
+        }
+        
+        .podium-icon {
+            font-size: 2.5rem;
+        }
+        
+        footer {
+            background-color: var(--primary);
+            color: white;
+        }
+        
+        .teacher-name {
+            color: var(--secondary);
+            font-weight: 500;
+        }
+        
+        .highlighted {
+            background-color: rgba(0, 74, 141, 0.05);
+        }
+        
+        @media (max-width: 768px) {
+            .podium-container {
+                flex-direction: column;
+            }
+            
+            .podium-item {
+                width: 100% !important;
+                margin-bottom: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header/Navbar -->
+    <header>
+        <nav class="navbar navbar-expand-lg navbar-dark bg-primary py-3">
+            <div class="container">
+                <a class="navbar-brand d-flex align-items-center" href="#">
+                    <i class="bi bi-mortarboard-fill me-2 fs-3"></i>
+                    <span class="fw-bold">Feira de Profissões</span>
+                </a>
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <div class="collapse navbar-collapse" id="navbarNav">
+                    <ul class="navbar-nav ms-auto">
+                        <li class="nav-item">
+                            <a class="nav-link text-light" href="index.html"><i class="bi bi-star-fill me-1"></i> Votar</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link active" href="placar.html"><i class="bi bi-trophy-fill me-1"></i> Placar</a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <!-- Main Content -->
+    <main class="container my-5">
+        <div class="row mb-4">
+            <div class="col-12 text-center">
+                <h1 class="display-5 fw-bold text-primary mb-3">Placar de Votação</h1>
+                <p class="lead">Acompanhe em tempo real os projetos mais votados da feira</p>
+                <div class="d-flex justify-content-center align-items-center mt-3">
+                    <div class="bg-primary text-white px-3 py-2 rounded-circle me-2">
+                        <i class="bi bi-arrow-repeat"></i>
+                    </div>
+                    <span class="text-muted">Atualizando automaticamente</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Podium Section (dinâmico) -->
+        <div class="row mb-5" id="podiumSection" style="display:none;">
+            <div class="col-12">
+                <h2 class="text-center mb-4"><i class="bi bi-trophy-fill me-2 text-secondary"></i>Top 3</h2>
+                <div class="d-flex podium-container justify-content-center align-end gap-4" id="podiumContainer"></div>
+            </div>
+        </div>
+
+        <!-- Full Results Table -->
+        <div class="row">
+            <div class="col-12">
+                <h2 class="text-center mb-4"><i class="bi bi-list-ol me-2 text-secondary"></i>Classificação Completa</h2>
+                
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <span class="text-muted">Total de votos: <strong id="totalVotos">0</strong></span>
+                    <div class="d-flex align-items-center">
+                        <span class="me-2">Ordenar por:</span>
+                        <select class="form-select form-select-sm" style="width: auto;">
+                            <option selected>Mais votados</option>
+                            <option>Nome A-Z</option>
+                            <option>Professores</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="table-responsive">
+                    <table class="table table-hover" id="tabelaResultados">
+                        <thead class="table-dark">
+                            <tr>
+                                <th scope="col" style="width: 60px;">Pos.</th>
+                                <th scope="col">Turma</th>
+                                <th scope="col">Professor</th>
+                                <th scope="col" class="text-center">Votos</th>
+                                <th scope="col" class="text-center">Percentual</th>
+                                <th scope="col">Progresso</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tbodyResultados">
+                            <!-- Linhas geradas dinamicamente -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="py-4 mt-5">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-4 mb-3 mb-md-0">
+                    <h5>Feira de Profissões</h5>
+                    <p>Uma iniciativa da instituição para conectar alunos e o mercado de trabalho.</p>
+                </div>
+                <div class="col-md-4 mb-3 mb-md-0">
+                    <h5>Contato</h5>
+                    <ul class="list-unstyled">
+                        <li><i class="bi bi-geo-alt-fill me-2"></i> Rua Exemplo, 123 - Cidade</li>
+                        <li><i class="bi bi-telephone-fill me-2"></i> (00) 0000-0000</li>
+                        <li><i class="bi bi-envelope-fill me-2"></i> contato@instituicao.com</li>
+                    </ul>
+                </div>
+                <div class="col-md-4">
+                    <h5>Redes Sociais</h5>
+                    <div class="d-flex gap-3 fs-4">
+                        <a href="#" class="text-light"><i class="bi bi-facebook"></i></a>
+                        <a href="#" class="text-light"><i class="bi bi-instagram"></i></a>
+                        <a href="#" class="text-light"><i class="bi bi-twitter"></i></a>
+                        <a href="#" class="text-light"><i class="bi bi-youtube"></i></a>
+                    </div>
+                </div>
+            </div>
+            <hr class="my-4 bg-light">
+            <div class="text-center">
+                <p class="mb-0">&copy; 2023 Instituição de Ensino. Todos os direitos reservados.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Busca o placar no backend e renderiza pódio e tabela
+        async function loadScoreboard() {
+            try {
+                const resp = await fetch('/api/placar');
+                if (!resp.ok) throw new Error('Falha ao carregar placar');
+                const data = await resp.json();
+                renderPodium(data.results, data.total);
+                renderTable(data.results, data.total);
+                document.getElementById('totalVotos').textContent = String(data.total || 0);
+            } catch (e) {
+                console.error(e);
+            }
+        }
+
+        // Renderiza Top 3
+        function renderPodium(results, total) {
+            const podiumSection = document.getElementById('podiumSection');
+            const container = document.getElementById('podiumContainer');
+            container.innerHTML = '';
+
+            if (!results || results.length === 0) {
+                podiumSection.style.display = 'none';
+                return;
+            }
+
+            podiumSection.style.display = '';
+            const top3 = results.slice(0, 3);
+            const first  = top3[0]; // mais votos
+            const second = top3[1]; // segundo mais votos
+            const third  = top3[2]; // terceiro mais votos
+
+            const buildCard = (item, placeClass, label, width, offsetPx, isFirst) => {
+                if (!item) return '';
+                const votos = Number(item.votos || 0);
+                const perc = total > 0 ? ((votos / total) * 100).toFixed(1) : '0.0';
+                const offsetStyle = offsetPx ? `margin-bottom:${offsetPx};` : '';
+                const header = isFirst
+                    ? '<i class="bi bi-award-fill podium-icon"></i>'
+                    : `<div class="podium-number">${label}</div>`;
+                return `
+                    <div class="podium-item ${placeClass} p-4 text-center" style="width:${width}; ${offsetStyle}">
+                        ${header}
+                        <h3 class="mt-3">${item.nome_turma}</h3>
+                        <p class="teacher-name">${item.professor_turma || ''}</p>
+                        <div class="fs-4 fw-bold mt-3">${votos} votos</div>
+                        <div class="mt-2">${perc}%</div>
+                    </div>`;
+            };
+
+            // Ordem visual: segundo (esquerda), primeiro (centro, destacado), terceiro (direita)
+            const html = [
+                buildCard(second, 'second-place', '2', '30%', null, false),
+                buildCard(first,  'first-place',  '',  '35%', '30px', true),
+                buildCard(third,  'third-place',  '3', '30%', null, false)
+            ].join('');
+
+            container.innerHTML = html;
+        }
+
+        // Renderiza tabela completa
+        function renderTable(results, total) {
+            const tbody = document.getElementById('tbodyResultados');
+            tbody.innerHTML = '';
+
+            results.forEach((item, index) => {
+                const pos = index + 1;
+                const votos = Number(item.votos || 0);
+                const perc = total > 0 ? ((votos / total) * 100).toFixed(1) : '0.0';
+                const icon = pos <= 3
+                    ? `<i class="bi bi-trophy-fill ${pos===1 ? 'text-warning' : pos===2 ? 'text-secondary' : 'text-tertiary'} me-2"></i>`
+                    : '';
+                const rowClass = pos <= 3 ? 'highlighted' : '';
+
+                const tr = document.createElement('tr');
+                tr.className = rowClass;
+                tr.innerHTML = `
+                    <th scope="row" class="align-middle">${pos}</th>
+                    <td class="align-middle">
+                        <div class="d-flex align-items-center">
+                            ${icon}
+                            <strong>${item.nome_turma}</strong>
+                        </div>
+                    </td>
+                    <td class="align-middle teacher-name">${item.professor_turma || ''}</td>
+                    <td class="align-middle text-center fw-bold">${votos}</td>
+                    <td class="align-middle text-center">${perc}%</td>
+                    <td class="align-middle">
+                        <div class="progress">
+                            <div class="progress-bar" role="progressbar" style="width: ${perc}%;" aria-valuenow="${perc}" aria-valuemin="0" aria-valuemax="100"></div>
+                        </div>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        // Atualiza automaticamente a cada 30s
+        setInterval(loadScoreboard, 3000);
+        document.addEventListener('DOMContentLoaded', loadScoreboard);
+    </script>
+</body>
+</html>

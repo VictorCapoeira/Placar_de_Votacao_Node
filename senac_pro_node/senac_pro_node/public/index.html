@@ -1,0 +1,487 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Feira de Profissões - Votação</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    <style>
+        :root {
+            --primary: #004A8D;
+            --secondary: #F7941D;
+            --tertiary: #FDC180;
+        }
+        
+        body {
+            background-color: #f8f9fa;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        .bg-primary {
+            background-color: var(--primary) !important;
+        }
+        
+        .btn-primary {
+            background-color: var(--primary);
+            border-color: var(--primary);
+        }
+        
+        .btn-primary:hover {
+            background-color: #003a70;
+            border-color: #003a70;
+        }
+        
+        .btn-secondary {
+            background-color: var(--secondary);
+            border-color: var(--secondary);
+            color: white;
+        }
+        
+        .btn-secondary:hover {
+            background-color: #e08515;
+            border-color: #e08515;
+            color: white;
+        }
+        
+        .text-secondary {
+            color: var(--secondary) !important;
+        }
+        
+        .card {
+            transition: transform 0.3s, box-shadow 0.3s;
+            border: none;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.15);
+        }
+        
+        .card-title {
+            color: var(--primary);
+            font-weight: 600;
+        }
+        
+        .card-img-top {
+            height: 200px;
+            object-fit: cover;
+        }
+        
+        .carousel-control-prev-icon,
+        .carousel-control-next-icon {
+            background-color: rgba(0, 0, 0, 0.5);
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+        }
+        
+        footer {
+            background-color: var(--primary);
+            color: white;
+        }
+        
+        .modal-content {
+            border-radius: 10px;
+            overflow: hidden;
+        }
+        
+        .modal-header {
+            background-color: var(--primary);
+            color: white;
+        }
+        
+        #cpfForm {
+            max-width: 500px;
+            margin: 0 auto;
+        }
+        
+        .teacher-name {
+            color: var(--secondary);
+            font-weight: 500;
+        }
+    </style>
+</head>
+<body>
+    <!-- Header/Navbar -->
+    <header>
+        <nav class="navbar navbar-expand-lg navbar-dark bg-primary py-3">
+            <div class="container">
+                <a class="navbar-brand d-flex align-items-center" href="#">
+                    <i class="bi bi-mortarboard-fill me-2 fs-3"></i>
+                    <span class="fw-bold">Feira de Profissões</span>
+                </a>
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <div class="collapse navbar-collapse" id="navbarNav">
+                    <ul class="navbar-nav ms-auto">
+                        <li class="nav-item">
+                            <a class="nav-link active" href="index.html"><i class="bi bi-star-fill me-1"></i> Votar</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link text-light" href="placar.html"><i class="bi bi-trophy-fill me-1"></i> Placar</a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <!-- Main Content -->
+    <main class="container my-5">
+        <div class="row mb-4">
+            <div class="col-12 text-center">
+                <h1 class="display-5 fw-bold text-primary">Vote no Melhor Projeto</h1>
+                <p class="lead">Conheça os projetos das turmas e vote no que mais se destacou!</p>
+            </div>
+        </div>
+
+        <!-- CPF Modal -->
+        <div class="modal fade" id="cpfModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="cpfModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="cpfModalLabel">Identificação</h5>
+                    </div>
+                    <div class="modal-body">
+                        <p>Para participar da votação, precisamos do seu CPF:</p>
+                        <form id="cpfForm">
+                            <div class="mb-3">
+                                <label for="cpfInput" class="form-label">CPF</label>
+                                <div class="input-group">
+                                    <input type="text" class="form-control" id="cpfInput" placeholder="000.000.000-00" required maxlength="14">
+                                    <span class="input-group-text" id="cpfValidationIcon" style="display: none;">
+                                        <i class="bi bi-check-circle-fill text-success" id="cpfValid" style="display: none;"></i>
+                                        <i class="bi bi-x-circle-fill text-danger" id="cpfInvalid" style="display: none;"></i>
+                                    </span>
+                                </div>
+                                <div class="form-text">Seu CPF será utilizado apenas para controle de votação (um voto por CPF) e não será compartilhado.</div>
+                                <div id="cpfFeedback" class="invalid-feedback" style="display: none;">
+                                    CPF inválido. Verifique os números digitados.
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" id="confirmCpf">Confirmar e Acessar</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Projects Grid -->
+        <div class="row g-4" id="projectsGrid">
+            <!-- Project cards will be displayed here -->
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="py-4 mt-5">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-4 mb-3 mb-md-0">
+                    <h5>Feira de Profissões</h5>
+                    <p>Uma iniciativa da instituição para conectar alunos e o mercado de trabalho.</p>
+                </div>
+                <div class="col-md-4 mb-3 mb-md-0">
+                    <h5>Contato</h5>
+                    <ul class="list-unstyled">
+                        <li><i class="bi bi-geo-alt-fill me-2"></i> Rua Exemplo, 123 - Cidade</li>
+                        <li><i class="bi bi-telephone-fill me-2"></i> (00) 0000-0000</li>
+                        <li><i class="bi bi-envelope-fill me-2"></i> contato@instituicao.com</li>
+                    </ul>
+                </div>
+                <div class="col-md-4">
+                    <h5>Redes Sociais</h5>
+                    <div class="d-flex gap-3 fs-4">
+                        <a href="#" class="text-light"><i class="bi bi-facebook"></i></a>
+                        <a href="#" class="text-light"><i class="bi bi-instagram"></i></a>
+                        <a href="#" class="text-light"><i class="bi bi-twitter"></i></a>
+                        <a href="#" class="text-light"><i class="bi bi-youtube"></i></a>
+                    </div>
+                </div>
+            </div>
+            <hr class="my-4 bg-light">
+            <div class="text-center">
+                <p class="mb-0">&copy; 2023 Instituição de Ensino. Todos os direitos reservados.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Estado global simples para manter o CPF durante a sessão da página
+        let currentCPF = null;
+
+        // Função para validar CPF
+        function isValidCPF(cpf) {
+            // Remove caracteres não numéricos
+            cpf = String(cpf).replace(/\D/g, '');
+            
+            // Verifica se tem 11 dígitos
+            if (cpf.length !== 11) return false;
+            
+            // Verifica se todos os dígitos são iguais (casos inválidos)
+            if (/^(\d)\1{10}$/.test(cpf)) return false;
+            
+            // Validação do primeiro dígito verificador
+            let sum = 0;
+            for (let i = 0; i < 9; i++) {
+                sum += parseInt(cpf[i]) * (10 - i);
+            }
+            let remainder = sum % 11;
+            let digit1 = remainder < 2 ? 0 : 11 - remainder;
+            
+            if (parseInt(cpf[9]) !== digit1) return false;
+            
+            // Validação do segundo dígito verificador
+            sum = 0;
+            for (let i = 0; i < 10; i++) {
+                sum += parseInt(cpf[i]) * (11 - i);
+            }
+            remainder = sum % 11;
+            let digit2 = remainder < 2 ? 0 : 11 - remainder;
+            
+            if (parseInt(cpf[10]) !== digit2) return false;
+            
+            return true;
+        }
+
+        // Função para formatar CPF durante a digitação
+        function formatCPF(value) {
+            const cpf = value.replace(/\D/g, '');
+            return cpf.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, '$1.$2.$3-$4');
+        }
+
+        // 1) Exibe modal de CPF ao carregar e valida CPF
+        document.addEventListener('DOMContentLoaded', function() {
+            const cpfModal = new bootstrap.Modal(document.getElementById('cpfModal'));
+            const cpfInput = document.getElementById('cpfInput');
+            
+            cpfModal.show();
+
+            // Adiciona formatação automática no campo CPF
+            cpfInput.addEventListener('input', function() {
+                const value = this.value.replace(/\D/g, '');
+                if (value.length <= 11) {
+                    this.value = formatCPF(value);
+                }
+                
+                // Feedback visual de validação
+                const cpfValidationIcon = document.getElementById('cpfValidationIcon');
+                const cpfValid = document.getElementById('cpfValid');
+                const cpfInvalid = document.getElementById('cpfInvalid');
+                const cpfFeedback = document.getElementById('cpfFeedback');
+                const confirmButton = document.getElementById('confirmCpf');
+                
+                if (value.length === 11) {
+                    cpfValidationIcon.style.display = 'block';
+                    if (isValidCPF(value)) {
+                        // CPF válido
+                        cpfValid.style.display = 'inline';
+                        cpfInvalid.style.display = 'none';
+                        cpfFeedback.style.display = 'none';
+                        this.classList.remove('is-invalid');
+                        this.classList.add('is-valid');
+                        confirmButton.disabled = false;
+                    } else {
+                        // CPF inválido
+                        cpfValid.style.display = 'none';
+                        cpfInvalid.style.display = 'inline';
+                        cpfFeedback.style.display = 'block';
+                        this.classList.remove('is-valid');
+                        this.classList.add('is-invalid');
+                        confirmButton.disabled = true;
+                    }
+                } else {
+                    // CPF incompleto
+                    cpfValidationIcon.style.display = 'none';
+                    cpfFeedback.style.display = 'none';
+                    this.classList.remove('is-valid', 'is-invalid');
+                    confirmButton.disabled = value.length === 0 ? false : true;
+                }
+            });
+
+            // Limita a 14 caracteres (CPF formatado: 000.000.000-00)
+            cpfInput.addEventListener('keypress', function(e) {
+                if (this.value.length >= 14 && e.key !== 'Backspace' && e.key !== 'Delete') {
+                    e.preventDefault();
+                }
+            });
+
+            document.getElementById('confirmCpf').addEventListener('click', async function() {
+                const cpfVal = document.getElementById('cpfInput').value.replace(/\D/g, '');
+                
+                if (!isValidCPF(cpfVal)) {
+                    alert('CPF inválido! Verifique os números e tente novamente.');
+                    return;
+                }
+                
+                // Desabilita o botão e mostra carregamento
+                const button = this;
+                const originalText = button.innerHTML;
+                button.disabled = true;
+                button.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status"></span>Verificando...';
+                
+                // Verifica se o CPF já votou antes de permitir acesso
+                try {
+                    const checkResponse = await fetch(`/api/check-cpf/${cpfVal}`);
+                    if (!checkResponse.ok) {
+                        throw new Error('Erro ao verificar CPF');
+                    }
+                    
+                    const checkData = await checkResponse.json();
+                    
+                    if (checkData.hasVoted) {
+                        // CPF já votou, redireciona para página de bloqueio
+                        window.location.href = 'blocked.html';
+                        return;
+                    }
+                    
+                    // CPF ainda não votou, permite acesso
+                    currentCPF = cpfVal; // guarda o CPF
+                    cpfModal.hide();
+                    await loadAndRenderProjects(); // 2) carrega turmas após confirmar CPF
+                } catch (error) {
+                    console.error('Erro ao verificar CPF:', error);
+                    alert('Erro ao verificar CPF. Tente novamente.');
+                    // Restaura o botão em caso de erro
+                    button.disabled = false;
+                    button.innerHTML = originalText;
+                }
+            });
+        });
+
+        // 2) Busca as turmas na API e mostra um spinner durante o carregamento
+        async function loadAndRenderProjects() {
+            const projectsGrid = document.getElementById('projectsGrid');
+            projectsGrid.innerHTML = `
+                <div class="col-12 text-center py-5">
+                    <div class="spinner-border text-primary" role="status"></div>
+                    <p class="mt-3 mb-0">Carregando projetos...</p>
+                </div>
+            `;
+
+            try {
+                const resp = await fetch('/api/turmas');
+                if (!resp.ok) throw new Error('Falha ao carregar dados');
+                const classes = await resp.json();
+                renderProjects(classes); // 3) renderiza os cards
+            } catch (e) {
+                projectsGrid.innerHTML = `
+                    <div class="col-12">
+                        <div class="alert alert-danger">Não foi possível carregar os projetos. Tente novamente mais tarde.</div>
+                    </div>
+                `;
+                console.error(e);
+            }
+        }
+
+        // 3) Renderiza os cards das turmas com carrossel de imagens
+        function renderProjects(classes) {
+            const projectsGrid = document.getElementById('projectsGrid');
+            projectsGrid.innerHTML = '';
+
+            if (!classes || classes.length === 0) {
+                projectsGrid.innerHTML = `
+                    <div class="col-12">
+                        <div class="alert alert-info">Nenhum projeto cadastrado ainda.</div>
+                    </div>
+                `;
+                return;
+            }
+
+            classes.forEach(classItem => {
+                const images = Array.isArray(classItem.images) && classItem.images.length > 0
+                    ? classItem.images
+                    : ["https://placehold.co/600x400/004A8D/white?text=Sem+imagem"]; // fallback
+                const carouselId = `carousel-${classItem.id}`;
+
+                const carouselIndicators = images.map((_, index) => 
+                    `<button type="button" data-bs-target="#${carouselId}" data-bs-slide-to="${index}" 
+                     ${index === 0 ? 'class="active" aria-current="true"' : ''} aria-label="Slide ${index + 1}"></button>`
+                ).join('');
+
+                const carouselItems = images.map((image, index) => 
+                    `<div class="carousel-item ${index === 0 ? 'active' : ''}">
+                        <img src="${image}" class="d-block w-100 card-img-top" alt="Projeto ${classItem.name}">
+                    </div>`
+                ).join('');
+
+                const col = document.createElement('div');
+                col.className = 'col-md-6 col-lg-4';
+                col.innerHTML = `
+                    <div class="card h-100">
+                        <div id="${carouselId}" class="carousel slide" data-bs-ride="carousel">
+                            <div class="carousel-indicators">
+                                ${carouselIndicators}
+                            </div>
+                            <div class="carousel-inner">
+                                ${carouselItems}
+                            </div>
+                            <button class="carousel-control-prev" type="button" data-bs-target="#${carouselId}" data-bs-slide="prev">
+                                <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                                <span class="visually-hidden">Anterior</span>
+                            </button>
+                            <button class="carousel-control-next" type="button" data-bs-target="#${carouselId}" data-bs-slide="next">
+                                <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                                <span class="visually-hidden">Próximo</span>
+                            </button>
+                        </div>
+                        <div class="card-body">
+                            <h5 class="card-title">${classItem.name}</h5>
+                            <p class="card-text">${classItem.description || ''}</p>
+                            ${classItem.teacher ? `<p class="teacher-name"><i class="bi bi-person-circle me-1"></i> ${classItem.teacher}</p>` : ''}
+                        </div>
+                        <div class="card-footer bg-white border-0">
+                            <button class="btn btn-primary w-100 vote-btn" data-class-id="${classItem.id}">
+                                <i class="bi bi-star-fill me-1"></i> Votar neste projeto
+                            </button>
+                        </div>
+                    </div>
+                `;
+
+                projectsGrid.appendChild(col);
+            });
+
+            // 4) Ao clicar em votar, envia POST /api/vote com CPF e id_turma
+            document.querySelectorAll('.vote-btn').forEach(button => {
+                button.addEventListener('click', async function() {
+                    const classId = this.getAttribute('data-class-id');
+                    if (!currentCPF) {
+                        alert('CPF não informado. Recarregue a página e confirme seu CPF.');
+                        return;
+                    }
+                    try {
+                        const resp = await fetch('/api/vote', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ cpf: currentCPF, id_turma: Number(classId) })
+                        });
+                        if (resp.ok) {
+                            alert('Voto registrado com sucesso!');
+                            // Desabilita todos os botões após votar
+                            document.querySelectorAll('.vote-btn').forEach(b => b.setAttribute('disabled', 'disabled'));
+                        } else {
+                            const data = await resp.json().catch(() => ({}));
+                            
+                            // Se o erro indica que o CPF já votou, redireciona para página de bloqueio
+                            if (data.hasVoted || data.error?.includes('já votou')) {
+                                window.location.href = 'blocked.html';
+                                return;
+                            }
+                            
+                            alert(data.error || 'Não foi possível registrar o voto.');
+                        }
+                    } catch (e) {
+                        alert('Erro de conexão ao registrar o voto.');
+                        console.error(e);
+                    }
+                });
+            });
+        }
+    </script>
+</body>
+</html>

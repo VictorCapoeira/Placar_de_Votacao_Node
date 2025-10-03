@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Acesso Bloqueado - Feira de Profissões</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    <style>
+        :root {
+            --primary: #004A8D;
+            --secondary: #F7941D;
+            --tertiary: #FDC180;
+        }
+        
+        body {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .blocked-card {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            max-width: 500px;
+            width: 90%;
+            padding: 2rem;
+            text-align: center;
+            animation: fadeInUp 0.8s ease-out;
+        }
+        
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .blocked-icon {
+            font-size: 4rem;
+            color: #dc3545;
+            margin-bottom: 1rem;
+            animation: shake 0.8s ease-in-out;
+        }
+        
+        @keyframes shake {
+            0%, 20%, 40%, 60%, 80%, 100% {
+                transform: translateX(0);
+            }
+            10%, 30%, 50%, 70%, 90% {
+                transform: translateX(-5px);
+            }
+        }
+        
+        .blocked-title {
+            color: var(--primary);
+            font-weight: bold;
+            margin-bottom: 1rem;
+        }
+        
+        .blocked-message {
+            color: #6c757d;
+            margin-bottom: 2rem;
+            line-height: 1.6;
+        }
+        
+        .btn-placar {
+            background-color: var(--secondary);
+            border-color: var(--secondary);
+            color: white;
+            padding: 0.75rem 2rem;
+            border-radius: 50px;
+            font-weight: 500;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-placar:hover {
+            background-color: #e08515;
+            border-color: #e08515;
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(240, 148, 29, 0.3);
+        }
+        
+        .logo {
+            max-width: 80px;
+            margin-bottom: 1rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="blocked-card">
+        <div class="blocked-icon">
+            <i class="bi bi-shield-x"></i>
+        </div>
+        
+        <h1 class="blocked-title h3">Acesso Negado</h1>
+        
+        <div class="blocked-message">
+            <h4 class="text-danger mb-3">Este CPF já votou!</h4>
+            <p>Nosso sistema detectou que este CPF já registrou um voto na votação da Feira de Profissões.</p>
+            <p>Para garantir a transparência e integridade do processo, <strong>cada CPF pode votar apenas uma vez</strong>.</p>
+            <p>Obrigado por sua participação!</p>
+        </div>
+        
+        <a href="placar.html" class="btn-placar">
+            <i class="bi bi-trophy"></i>
+            Ver Resultados da Votação
+        </a>
+        
+        <div class="mt-4">
+            <small class="text-muted">
+                Dúvidas? Entre em contato com a organização do evento.
+            </small>
+        </div>
+    </div>
+    
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
