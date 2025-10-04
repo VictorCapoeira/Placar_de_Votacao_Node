@@ -170,10 +170,9 @@ function extractTurmaIdFromFolder(foldername) {
     return null;
 }
 
-// Função para buscar imagens de uma turma específica (suporta pastas por turma)
-function getImagensParaTurma(turmaId) {
+// Função para buscar imagens de uma turma específica usando codigo_turma como nome da pasta
+function getImagensParaTurma(codigoTurma, turmaId = null) {
     const imagensPath = path.join(__dirname, 'public', 'imagens');
-    const turmaIdStr = String(turmaId);
     
     try {
         // Cria a pasta principal se não existir
@@ -185,18 +184,29 @@ function getImagensParaTurma(turmaId) {
         
         let imageFiles = [];
         
-        // MÉTODO 1: Busca em pasta específica da turma (NOVO - PREFERENCIAL)
+        // MÉTODO 1: Busca em pasta específica da turma usando codigo_turma (NOVO - PREFERENCIAL)
         const turmaPastas = [
-            `turma${turmaIdStr}`,
-            `turma${turmaIdStr.padStart(2, '0')}`,
-            `t${turmaIdStr}`,
-            `${turmaIdStr}`
+            codigoTurma, // Usa o código da turma diretamente (ex: ENG-01, MED-02)
+            codigoTurma.toLowerCase(), // Versão minúscula
+            codigoTurma.toUpperCase(), // Versão maiúscula
+            codigoTurma.replace(/[-_]/g, ''), // Remove hífens e underscores (ex: ENG01)
         ];
+        
+        // Se turmaId for fornecido, também tenta os padrões antigos para compatibilidade
+        if (turmaId) {
+            const turmaIdStr = String(turmaId);
+            turmaPastas.push(
+                `turma${turmaIdStr}`,
+                `turma${turmaIdStr.padStart(2, '0')}`,
+                `t${turmaIdStr}`,
+                `${turmaIdStr}`
+            );
+        }
         
         for (const turmaPasta of turmaPastas) {
             const turmaPath = path.join(imagensPath, turmaPasta);
             if (fs.existsSync(turmaPath) && fs.statSync(turmaPath).isDirectory()) {
-                console.log(`📁 Encontrada pasta para turma ${turmaId}: ${turmaPasta}`);
+                console.log(`📁 Encontrada pasta para turma ${codigoTurma}: ${turmaPasta}`);
                 const files = fs.readdirSync(turmaPath);
                 const turmaImages = files.filter(file => {
                     const ext = path.extname(file).toLowerCase();
@@ -204,6 +214,7 @@ function getImagensParaTurma(turmaId) {
                 }).map(file => `/imagens/${turmaPasta}/${file}`);
                 
                 imageFiles = imageFiles.concat(turmaImages);
+                break; // Para no primeiro match para evitar duplicatas
             }
         }
         
@@ -219,18 +230,20 @@ function getImagensParaTurma(turmaId) {
                 
                 if (!isImage) return false;
                 
-                // Múltiplas formas de identificar a turma:
+                // Múltiplas formas de identificar a turma usando codigo_turma:
                 const fileName = file.toLowerCase();
+                const codigoLower = codigoTurma.toLowerCase();
+                const codigoSemSeparador = codigoTurma.replace(/[-_]/g, '').toLowerCase();
                 
                 return (
-                    fileName.includes(`turma${turmaIdStr}.`) ||
-                    fileName.includes(`turma${turmaIdStr.padStart(2, '0')}.`) ||
-                    fileName.includes(`turma${turmaIdStr}_`) ||
-                    fileName.includes(`turma${turmaIdStr.padStart(2, '0')}_`) ||
-                    fileName.includes(`t${turmaIdStr}.`) ||
-                    fileName.includes(`projeto${turmaIdStr}.`) ||
-                    fileName.startsWith(`${turmaIdStr}.`) ||
-                    fileName.startsWith(`${turmaIdStr}_`)
+                    fileName.includes(`${codigoLower}.`) ||
+                    fileName.includes(`${codigoLower}_`) ||
+                    fileName.includes(`${codigoSemSeparador}.`) ||
+                    fileName.includes(`${codigoSemSeparador}_`) ||
+                    fileName.startsWith(`${codigoLower}.`) ||
+                    fileName.startsWith(`${codigoLower}_`) ||
+                    fileName.startsWith(`${codigoSemSeparador}.`) ||
+                    fileName.startsWith(`${codigoSemSeparador}_`)
                 );
             });
             
@@ -240,11 +253,11 @@ function getImagensParaTurma(turmaId) {
         // Ordena os arquivos para consistência
         imageFiles.sort();
         
-        console.log(`🖼️ Turma ${turmaId}: encontradas ${imageFiles.length} imagem(s)`);
+        console.log(`🖼️ Turma ${codigoTurma}: encontradas ${imageFiles.length} imagem(s)`);
         return imageFiles;
         
     } catch (error) {
-        console.error(`Erro ao buscar imagens para turma ${turmaId}:`, error);
+        console.error(`Erro ao buscar imagens para turma ${codigoTurma}:`, error);
         return [];
     }
 }
@@ -302,8 +315,8 @@ app.get('/api/turmas', async (_req, res) => {
 
         // Mapeia para o formato esperado pelo frontend
         const turmas = rows.map(r => {
-            // SEMPRE busca imagens na pasta local primeiro (projeto portável)
-            let images = getImagensParaTurma(r.id_turma);
+            // SEMPRE busca imagens usando codigo_turma como nome da pasta (NOVO COMPORTAMENTO)
+            let images = getImagensParaTurma(r.codigo_turma, r.id_turma); // Passa codigo_turma e id_turma para compatibilidade
             
             // Se não encontrou imagens locais, usa placeholder personalizado
             if (images.length === 0) {
