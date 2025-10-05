@@ -262,7 +262,7 @@ function getImagensParaTurma(codigoTurma, turmaId = null) {
     }
 }
 
-// GET /api/check-cpf/:cpf -> verifica se CPF já votou
+// GET /api/check-cpf/:cpf -> verifica se CPF já votou e se é administrador
 app.get('/api/check-cpf/:cpf', async (req, res) => {
     const { cpf } = req.params;
     
@@ -272,28 +272,61 @@ app.get('/api/check-cpf/:cpf', async (req, res) => {
     
     // Remove formatação para consistência no banco
     const cleanCPF = String(cpf).replace(/\D/g, '');
+    
+    // Verifica se é o CPF administrativo
+    const isAdmin = cleanCPF === ADMIN_CPF;
 
     try {
         // Busca se existe usuário com este CPF
         const [[user]] = await pool.query('SELECT id_usuario FROM usuario WHERE cpf = ?', [cleanCPF]);
         
         if (!user) {
-            // CPF não existe na base, pode votar
-            return res.json({ hasVoted: false });
+            // CPF não existe na base, pode votar (ou é admin)
+            return res.json({ 
+                hasVoted: false, 
+                isAdmin,
+                canAccessPlacar: isAdmin 
+            });
         }
 
         // Verifica se já votou
         const [[vote]] = await pool.query('SELECT id_votos FROM votos WHERE id_usuario = ?', [user.id_usuario]);
         
         if (vote) {
-            return res.json({ hasVoted: true, message: 'Este CPF já votou!' });
+            return res.json({ 
+                hasVoted: true, 
+                message: 'Este CPF já votou!',
+                isAdmin,
+                canAccessPlacar: isAdmin 
+            });
         }
         
-        res.json({ hasVoted: false });
+        res.json({ 
+            hasVoted: false,
+            isAdmin,
+            canAccessPlacar: isAdmin 
+        });
     } catch (err) {
         console.error('Erro ao verificar CPF:', err.message, err.code || '', err.sqlMessage || '');
         res.status(500).json({ error: 'Falha ao verificar CPF.' });
     }
+});
+
+// GET /api/check-admin/:cpf -> verifica se CPF é administrativo (endpoint específico)
+app.get('/api/check-admin/:cpf', async (req, res) => {
+    const { cpf } = req.params;
+    
+    if (!cpf || !isValidCPF(cpf)) {
+        return res.status(400).json({ error: 'CPF inválido.' });
+    }
+    
+    const cleanCPF = String(cpf).replace(/\D/g, '');
+    const isAdmin = cleanCPF === ADMIN_CPF;
+    
+    res.json({ 
+        isAdmin,
+        canAccessPlacar: isAdmin 
+    });
 });
 
 // GET /api/turmas -> retorna turmas do banco conforme schema fornecido
@@ -400,8 +433,34 @@ app.post('/api/vote', async (req, res) => {
     }
 });
 
+// CPF do administrador que tem acesso ao placar
+const ADMIN_CPF = '81112848029';
+
 // GET /api/placar -> retorna votos agregados por turma (ordem decrescente)
-app.get('/api/placar', async (_req, res) => {
+// REQUER AUTENTICAÇÃO: apenas CPF administrativo pode acessar
+app.get('/api/placar', async (req, res) => {
+    const { cpf } = req.query;
+    
+    // Verifica se o CPF foi fornecido e se é válido
+    if (!cpf || !isValidCPF(cpf)) {
+        return res.status(401).json({ 
+            error: 'Acesso negado. CPF inválido ou não fornecido.',
+            code: 'INVALID_CPF'
+        });
+    }
+    
+    // Remove formatação para comparação
+    const cleanCPF = String(cpf).replace(/\D/g, '');
+    
+    // Verifica se é o CPF administrativo
+    if (cleanCPF !== ADMIN_CPF) {
+        console.log(`Tentativa de acesso não autorizado ao placar com CPF: ${cleanCPF}`);
+        return res.status(403).json({ 
+            error: 'Acesso negado. Apenas administradores podem visualizar o placar.',
+            code: 'ACCESS_DENIED'
+        });
+    }
+    
     try {
         const sql = `
             SELECT t.id_turma,
@@ -415,6 +474,8 @@ app.get('/api/placar', async (_req, res) => {
         `;
         const [rows] = await pool.query(sql);
         const total = rows.reduce((acc, r) => acc + Number(r.votos || 0), 0);
+        
+        console.log(`Placar acessado pelo administrador (CPF: ${cleanCPF})`);
         res.json({ total, results: rows });
     } catch (err) {
         console.error('Erro ao obter placar:', err.message, err.code || '', err.sqlMessage || '');
