@@ -1,0 +1,685 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard Administrativo - Feira de Profissões</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    <style>
+        :root {
+            --primary: #004A8D;
+            --secondary: #F7941D;
+            --tertiary: #FDC180;
+            --light-gray: #f8f9fa;
+            --medium-gray: #6c757d;
+            --border-radius: 12px;
+            --box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            --box-shadow-hover: 0 8px 25px rgba(0, 0, 0, 0.15);
+            --transition: all 0.3s ease;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, 'Roboto', sans-serif;
+            line-height: 1.6;
+            color: #343a40;
+        }
+        
+        .bg-primary {
+            background-color: var(--primary) !important;
+        }
+        
+        .btn-primary {
+            background-color: var(--primary);
+            border-color: var(--primary);
+        }
+        
+        .btn-primary:hover {
+            background-color: #003a70;
+            border-color: #003a70;
+        }
+        
+        .btn-secondary {
+            background-color: var(--secondary);
+            border-color: var(--secondary);
+            color: white;
+        }
+        
+        .btn-secondary:hover {
+            background-color: #e08515;
+            border-color: #e08515;
+            color: white;
+        }
+        
+        .text-secondary {
+            color: var(--secondary) !important;
+        }
+        
+        .card {
+            transition: var(--transition);
+            border: none;
+            border-radius: var(--border-radius);
+            box-shadow: var(--box-shadow);
+            overflow: hidden;
+            height: 100%;
+        }
+        
+        .card:hover {
+            transform: translateY(-8px);
+            box-shadow: var(--box-shadow-hover);
+        }
+        
+        .card-title {
+            color: var(--primary);
+            font-weight: 700;
+            font-size: 1.25rem;
+            line-height: 1.3;
+            margin-bottom: 0.75rem;
+        }
+        
+        .hover-text-secondary:hover {
+            color: var(--secondary) !important;
+            transform: translateY(-2px);
+        }
+        
+        .badge {
+            font-weight: 500;
+            letter-spacing: 0.5px;
+        }
+        
+        .admin-card {
+            background: linear-gradient(135deg, rgba(0, 74, 141, 0.1) 0%, rgba(247, 148, 29, 0.05) 100%);
+            border: 2px solid rgba(0, 74, 141, 0.2);
+        }
+        
+        .turno-card {
+            cursor: pointer;
+            background: white;
+            border: 2px solid transparent;
+        }
+        
+        .turno-card:hover {
+            border-color: var(--secondary);
+        }
+        
+        .turno-icon {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            margin: 0 auto 1rem;
+        }
+        
+        .turno-matutino .turno-icon {
+            background: linear-gradient(135deg, #FFE082 0%, #FFC107 100%);
+            color: #F57C00;
+        }
+        
+        .turno-vespertino .turno-icon {
+            background: linear-gradient(135deg, #FFCC80 0%, #FF9800 100%);
+            color: #E65100;
+        }
+        
+        .turno-noturno .turno-icon {
+            background: linear-gradient(135deg, #B39DDB 0%, #673AB7 100%);
+            color: white;
+        }
+        
+        .turno-geral .turno-icon {
+            background: linear-gradient(135deg, #81C784 0%, #4CAF50 100%);
+            color: white;
+        }
+        
+        /* Responsividade melhorada */
+        @media (max-width: 768px) {
+            .display-4 {
+                font-size: 2.5rem;
+            }
+            
+            .hero-section {
+                padding: 2rem 0 !important;
+            }
+            
+            .card-body {
+                padding: 1.25rem;
+            }
+            
+            .navbar-brand {
+                font-size: 1.25rem !important;
+            }
+            
+            .navbar-brand small {
+                display: none;
+            }
+        }
+        
+        /* Melhorias de acessibilidade */
+        .btn:focus,
+        .form-control:focus {
+            box-shadow: 0 0 0 0.2rem rgba(0, 74, 141, 0.25);
+        }
+    </style>
+</head>
+<body>
+    <!-- Header/Navbar -->
+    <header class="sticky-top">
+        <nav class="navbar navbar-expand-lg navbar-dark py-3" style="background: linear-gradient(135deg, var(--primary) 0%, #003875 100%); box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);">
+            <div class="container">
+                <a class="navbar-brand d-flex align-items-center" href="index.html" style="font-size: 1.5rem;">
+                    <i class="bi bi-mortarboard-fill me-3" style="font-size: 2rem; color: var(--secondary);"></i>
+                    <div>
+                        <span class="fw-bold d-block">Feira de Profissões</span>
+                        <small class="opacity-75" style="font-size: 0.75rem;">Dashboard Administrativo</small>
+                    </div>
+                </a>
+                <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <div class="collapse navbar-collapse" id="navbarNav">
+                    <ul class="navbar-nav ms-auto">
+                        <li class="nav-item">
+                            <a class="nav-link px-3 py-2 rounded-pill" href="index.html">
+                                <i class="bi bi-house-fill me-2"></i>Início
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link active px-3 py-2 rounded-pill" href="dashboard.html" style="background: rgba(247, 148, 29, 0.2);">
+                                <i class="bi bi-speedometer2 me-2"></i>Dashboard
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <!-- Main Content -->
+    <main class="container my-5">
+        <!-- Welcome Section -->
+        <div class="row mb-5">
+            <div class="col-12">
+                <div class="admin-card card p-4">
+                    <div class="row align-items-center">
+                        <div class="col-md-8">
+                            <h1 class="display-5 fw-bold text-primary mb-3">
+                                <i class="bi bi-shield-check me-3"></i>Dashboard Administrativo
+                            </h1>
+                            <p class="lead text-muted mb-3">
+                                Gerencie a votação por turnos e acompanhe os resultados em tempo real.
+                            </p>
+                            <div class="d-flex gap-2 flex-wrap">
+                                <span class="badge bg-primary px-3 py-2">
+                                    <i class="bi bi-person-check-fill me-1"></i>Administrador
+                                </span>
+                                <span class="badge bg-success px-3 py-2">
+                                    <i class="bi bi-clock-fill me-1"></i>Online
+                                </span>
+                                <span class="badge bg-info px-3 py-2">
+                                    <i class="bi bi-calendar-event me-1"></i>Feira 2025
+                                </span>
+                            </div>
+                        </div>
+                        <div class="col-md-4 text-center">
+                            <div class="bg-white rounded-circle p-4 shadow" style="width: 120px; height: 120px; margin: 0 auto; display: flex; align-items: center; justify-content: center;">
+                                <i class="bi bi-gear-fill" style="font-size: 3rem; color: var(--primary);"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Turnos Section -->
+        <div class="row mb-5">
+            <div class="col-12">
+                <h2 class="fw-bold text-primary mb-4">
+                    <i class="bi bi-clock-history me-2"></i>Gerenciamento por Turnos
+                </h2>
+                <p class="text-muted mb-4">Selecione um turno para visualizar e gerenciar as turmas e votações correspondentes.</p>
+            </div>
+        </div>
+
+        <!-- Controle de Turno Ativo -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header bg-primary text-white">
+                        <h5 class="mb-0">
+                            <i class="bi bi-gear-fill me-2"></i>Controle de Turno Ativo
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row align-items-center">
+                            <div class="col-md-6">
+                                <p class="mb-3">Selecione qual turno deve estar ativo no sistema. Todos os usuários verão apenas as turmas do turno selecionado.</p>
+                                <div id="turnoAtualInfo" class="alert alert-info">
+                                    <i class="bi bi-info-circle me-2"></i>
+                                    <span id="turnoAtualTexto">Carregando...</span>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="d-grid gap-2">
+                                    <button class="btn btn-warning" onclick="setTurnoAtivo('matutino')">
+                                        <i class="bi bi-sun-fill me-2"></i>Ativar Matutino
+                                    </button>
+                                    <button class="btn btn-warning" onclick="setTurnoAtivo('vespertino')">
+                                        <i class="bi bi-sun me-2"></i>Ativar Vespertino
+                                    </button>
+                                    <button class="btn btn-warning" onclick="setTurnoAtivo('noturno')">
+                                        <i class="bi bi-moon-stars-fill me-2"></i>Ativar Noturno
+                                    </button>
+                                    <button class="btn btn-success" onclick="setTurnoAtivo('geral')">
+                                        <i class="bi bi-globe me-2"></i>Liberar Todos os Turnos
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Turno Cards -->
+        <div class="row g-4 mb-5">
+            <!-- Matutino -->
+            <div class="col-lg-3 col-md-6">
+                <div class="card turno-card turno-matutino h-100">
+                    <div class="card-body text-center p-4">
+                        <div class="turno-icon">
+                            <i class="bi bi-sun-fill"></i>
+                        </div>
+                        <h4 class="card-title">Matutino</h4>
+                        <p class="text-muted mb-3">Turmas do período da manhã</p>
+                        <div class="d-flex justify-content-between mb-3">
+                            <small class="text-muted">Horário:</small>
+                            <small class="fw-bold">07h - 12h</small>
+                        </div>
+                        <div class="d-flex gap-2 justify-content-center">
+                            <a href="index.html" class="btn btn-outline-primary btn-sm">
+                                <i class="bi bi-star-fill me-1"></i>Votar
+                            </a>
+                            <a href="placar.html" class="btn btn-primary btn-sm">
+                                <i class="bi bi-trophy-fill me-1"></i>Placar
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Vespertino -->
+            <div class="col-lg-3 col-md-6">
+                <div class="card turno-card turno-vespertino h-100">
+                    <div class="card-body text-center p-4">
+                        <div class="turno-icon">
+                            <i class="bi bi-sun"></i>
+                        </div>
+                        <h4 class="card-title">Vespertino</h4>
+                        <p class="text-muted mb-3">Turmas do período da tarde</p>
+                        <div class="d-flex justify-content-between mb-3">
+                            <small class="text-muted">Horário:</small>
+                            <small class="fw-bold">13h - 18h</small>
+                        </div>
+                        <div class="d-flex gap-2 justify-content-center">
+                            <a href="index.html" class="btn btn-outline-primary btn-sm">
+                                <i class="bi bi-star-fill me-1"></i>Votar
+                            </a>
+                            <a href="placar.html" class="btn btn-primary btn-sm">
+                                <i class="bi bi-trophy-fill me-1"></i>Placar
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Noturno -->
+            <div class="col-lg-3 col-md-6">
+                <div class="card turno-card turno-noturno h-100">
+                    <div class="card-body text-center p-4">
+                        <div class="turno-icon">
+                            <i class="bi bi-moon-stars-fill"></i>
+                        </div>
+                        <h4 class="card-title">Noturno</h4>
+                        <p class="text-muted mb-3">Turmas do período da noite</p>
+                        <div class="d-flex justify-content-between mb-3">
+                            <small class="text-muted">Horário:</small>
+                            <small class="fw-bold">19h - 22h</small>
+                        </div>
+                        <div class="d-flex gap-2 justify-content-center">
+                            <a href="index.html" class="btn btn-outline-primary btn-sm">
+                                <i class="bi bi-star-fill me-1"></i>Votar
+                            </a>
+                            <a href="placar.html" class="btn btn-primary btn-sm">
+                                <i class="bi bi-trophy-fill me-1"></i>Placar
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Geral (Todos os Turnos) -->
+            <div class="col-lg-3 col-md-6">
+                <div class="card turno-card turno-geral h-100">
+                    <div class="card-body text-center p-4">
+                        <div class="turno-icon">
+                            <i class="bi bi-globe"></i>
+                        </div>
+                        <h4 class="card-title">Geral</h4>
+                        <p class="text-muted mb-3">Todas as turmas (todos os turnos)</p>
+                        <div class="d-flex justify-content-between mb-3">
+                            <small class="text-muted">Período:</small>
+                            <small class="fw-bold">Completo</small>
+                        </div>
+                        <div class="d-flex gap-2 justify-content-center">
+                            <a href="index.html" class="btn btn-outline-primary btn-sm">
+                                <i class="bi bi-star-fill me-1"></i>Votar
+                            </a>
+                            <a href="placar.html" class="btn btn-primary btn-sm">
+                                <i class="bi bi-trophy-fill me-1"></i>Placar Geral
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quick Stats -->
+        <div class="row g-4">
+            <div class="col-12">
+                <h3 class="fw-bold text-primary mb-4">
+                    <i class="bi bi-bar-chart-fill me-2"></i>Estatísticas Rápidas
+                </h3>
+            </div>
+            
+            <div class="col-lg-3 col-md-6">
+                <div class="card">
+                    <div class="card-body text-center">
+                        <div class="mb-3">
+                            <i class="bi bi-people-fill" style="font-size: 2.5rem; color: var(--primary);"></i>
+                        </div>
+                        <h4 class="fw-bold text-primary mb-1" id="totalTurmas">-</h4>
+                        <p class="text-muted mb-0">Total de Turmas</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-lg-3 col-md-6">
+                <div class="card">
+                    <div class="card-body text-center">
+                        <div class="mb-3">
+                            <i class="bi bi-star-fill" style="font-size: 2.5rem; color: var(--secondary);"></i>
+                        </div>
+                        <h4 class="fw-bold text-secondary mb-1" id="totalVotos">-</h4>
+                        <p class="text-muted mb-0">Total de Votos</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-lg-3 col-md-6">
+                <div class="card">
+                    <div class="card-body text-center">
+                        <div class="mb-3">
+                            <i class="bi bi-sun-fill" style="font-size: 2.5rem; color: #FFC107;"></i>
+                        </div>
+                        <h4 class="fw-bold mb-1" style="color: #FFC107;" id="votosMatutino">-</h4>
+                        <p class="text-muted mb-0">Votos Matutino</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-lg-3 col-md-6">
+                <div class="card">
+                    <div class="card-body text-center">
+                        <div class="mb-3">
+                            <i class="bi bi-moon-stars-fill" style="font-size: 2.5rem; color: #673AB7;"></i>
+                        </div>
+                        <h4 class="fw-bold mb-1" style="color: #673AB7;" id="votosNoturno">-</h4>
+                        <p class="text-muted mb-0">Votos Noturno</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="mt-5" style="background: linear-gradient(135deg, var(--primary) 0%, #003875 100%);"> 
+        <div class="container py-5">
+            <div class="row g-4">
+                <div class="col-lg-4 col-md-6">
+                    <div class="d-flex align-items-center mb-3">
+                        <i class="bi bi-mortarboard-fill me-2" style="font-size: 1.5rem; color: var(--secondary);"></i>
+                        <h5 class="text-white mb-0 fw-bold">Feira de Profissões</h5>
+                    </div>
+                    <p class="text-white-50 mb-3">Uma iniciativa inovadora da nossa instituição para conectar estudantes ao mercado de trabalho, promovendo o desenvolvimento profissional.</p>
+                    <div class="d-flex gap-2">
+                        <span class="badge bg-secondary px-2 py-1">Inovação</span>
+                        <span class="badge bg-light text-primary px-2 py-1">Educação</span>
+                        <span class="badge bg-warning text-dark px-2 py-1">Futuro</span>
+                    </div>
+                </div>
+                <div class="col-lg-4 col-md-6">
+                    <h5 class="text-white fw-bold mb-3">
+                        <i class="bi bi-telephone-fill me-2 text-secondary"></i>Contato
+                    </h5>
+                    <ul class="list-unstyled text-white-50">
+                        <li class="mb-2 d-flex align-items-center">
+                            <i class="bi bi-geo-alt-fill me-3 text-secondary"></i>
+                            <span>Rua da Educação, 123 - Centro<br>São Paulo - SP</span>
+                        </li>
+                        <li class="mb-2 d-flex align-items-center">
+                            <i class="bi bi-telephone-fill me-3 text-secondary"></i>
+                            <span>(11) 9999-9999</span>
+                        </li>
+                        <li class="mb-2 d-flex align-items-center">
+                            <i class="bi bi-envelope-fill me-3 text-secondary"></i>
+                            <span>feira@instituicao.edu.br</span>
+                        </li>
+                        <li class="d-flex align-items-center">
+                            <i class="bi bi-clock-fill me-3 text-secondary"></i>
+                            <span>Seg-Sex: 8h às 18h</span>
+                        </li>
+                    </ul>
+                </div>
+                <div class="col-lg-4 col-md-12">
+                    <h5 class="text-white fw-bold mb-3">
+                        <i class="bi bi-share-fill me-2 text-secondary"></i>Redes Sociais
+                    </h5>
+                    <div class="d-flex gap-3 mb-3">
+                        <a href="#" class="text-white-50 hover-text-secondary" style="font-size: 1.5rem; transition: var(--transition);">
+                            <i class="bi bi-facebook"></i>
+                        </a>
+                        <a href="#" class="text-white-50 hover-text-secondary" style="font-size: 1.5rem; transition: var(--transition);">
+                            <i class="bi bi-instagram"></i>
+                        </a>
+                        <a href="#" class="text-white-50 hover-text-secondary" style="font-size: 1.5rem; transition: var(--transition);">
+                            <i class="bi bi-twitter"></i>
+                        </a>
+                        <a href="#" class="text-white-50 hover-text-secondary" style="font-size: 1.5rem; transition: var(--transition);">
+                            <i class="bi bi-youtube"></i>
+                        </a>
+                        <a href="#" class="text-white-50 hover-text-secondary" style="font-size: 1.5rem; transition: var(--transition);">
+                            <i class="bi bi-linkedin"></i>
+                        </a>
+                    </div>
+                    <p class="text-white-50 small mb-0">Siga-nos para ficar por dentro das novidades e próximos eventos!</p>
+                </div>
+            </div>
+            <hr class="my-4" style="border-color: rgba(255, 255, 255, 0.2);">
+            <div class="row align-items-center">
+                <div class="col-md-6">
+                    <p class="text-white-50 mb-0">&copy; 2024 Instituição de Ensino. Todos os direitos reservados.</p>
+                </div>
+                <div class="col-md-6 text-md-end">
+                    <small class="text-white-50">
+                        Desenvolvido com <i class="bi bi-heart-fill text-danger"></i> para educação
+                    </small>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Variável global para armazenar o CPF do admin
+        let adminCPF = null;
+
+        // Função para definir turno ativo
+        async function setTurnoAtivo(turno) {
+            if (!adminCPF) {
+                alert('Erro: CPF administrativo não encontrado');
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/set-turno-ativo', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        cpf: adminCPF,
+                        turno: turno
+                    })
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    
+                    // Atualiza a informação do turno atual
+                    updateTurnoAtualInfo(data.turnoAtivo);
+                    
+                    // Mostra feedback visual
+                    showToast(data.message, 'success');
+                    
+                    // Recarrega estatísticas
+                    loadQuickStats();
+                } else {
+                    const errorData = await response.json();
+                    showToast(errorData.error || 'Erro ao alterar turno', 'error');
+                }
+            } catch (error) {
+                console.error('Erro ao alterar turno:', error);
+                showToast('Erro de conexão ao alterar turno', 'error');
+            }
+        }
+
+        // Atualiza informação do turno atual
+        function updateTurnoAtualInfo(turnoAtivo) {
+            const turnoTexto = document.getElementById('turnoAtualTexto');
+            const turnoInfo = document.getElementById('turnoAtualInfo');
+            
+            if (turnoAtivo) {
+                const turnoCapitalizado = turnoAtivo.charAt(0).toUpperCase() + turnoAtivo.slice(1);
+                turnoTexto.textContent = `Turno ativo: ${turnoCapitalizado}`;
+                turnoInfo.className = 'alert alert-warning';
+                turnoInfo.innerHTML = `<i class="bi bi-exclamation-triangle me-2"></i><span id="turnoAtualTexto">Turno ativo: ${turnoCapitalizado}</span>`;
+            } else {
+                turnoTexto.textContent = 'Todos os turnos estão disponíveis';
+                turnoInfo.className = 'alert alert-success';
+                turnoInfo.innerHTML = `<i class="bi bi-check-circle me-2"></i><span id="turnoAtualTexto">Todos os turnos estão disponíveis</span>`;
+            }
+        }
+
+        // Carregar estatísticas rápidas
+        async function loadQuickStats() {
+            try {
+                // Carregar estatísticas gerais
+                const response = await fetch('/api/stats');
+                if (response.ok) {
+                    const stats = await response.json();
+                    
+                    document.getElementById('totalTurmas').textContent = stats.totalTurmas || '-';
+                    document.getElementById('totalVotos').textContent = stats.totalVotos || '-';
+                    document.getElementById('votosMatutino').textContent = stats.votosMatutino || '-';
+                    document.getElementById('votosNoturno').textContent = stats.votosNoturno || '-';
+                    
+                    // Atualiza informação do turno ativo
+                    updateTurnoAtualInfo(stats.turnoAtivo);
+                } else {
+                    console.error('Erro ao carregar estatísticas');
+                }
+            } catch (error) {
+                console.error('Erro ao conectar com o servidor:', error);
+            }
+        }
+
+        // Função para exibir toast
+        function showToast(message, type = 'info') {
+            // Cria elemento toast dinamicamente
+            const toastContainer = document.querySelector('.toast-container') || createToastContainer();
+            
+            const toastId = 'toast-' + Date.now();
+            const toastHtml = `
+                <div id="${toastId}" class="toast" role="alert" aria-live="assertive" aria-atomic="true" data-bs-delay="4000">
+                    <div class="toast-header">
+                        <i class="bi ${getToastIcon(type)} me-2"></i>
+                        <strong class="me-auto">${getToastTitle(type)}</strong>
+                        <button type="button" class="btn-close" data-bs-dismiss="toast"></button>
+                    </div>
+                    <div class="toast-body">${message}</div>
+                </div>
+            `;
+            
+            toastContainer.insertAdjacentHTML('beforeend', toastHtml);
+            
+            const toastElement = document.getElementById(toastId);
+            const toast = new bootstrap.Toast(toastElement);
+            toast.show();
+            
+            // Remove o elemento após 5 segundos
+            setTimeout(() => {
+                if (toastElement) {
+                    toastElement.remove();
+                }
+            }, 5000);
+        }
+
+        function createToastContainer() {
+            const container = document.createElement('div');
+            container.className = 'toast-container position-fixed top-0 end-0 p-3';
+            container.style.zIndex = '1056';
+            document.body.appendChild(container);
+            return container;
+        }
+
+        function getToastIcon(type) {
+            const icons = {
+                success: 'bi-check-circle-fill text-success',
+                error: 'bi-x-circle-fill text-danger',
+                warning: 'bi-exclamation-triangle-fill text-warning',
+                info: 'bi-info-circle-fill text-primary'
+            };
+            return icons[type] || icons.info;
+        }
+
+        function getToastTitle(type) {
+            const titles = {
+                success: 'Sucesso',
+                error: 'Erro',
+                warning: 'Atenção',
+                info: 'Informação'
+            };
+            return titles[type] || titles.info;
+        }
+
+        // Carregar dados ao carregar a página
+        document.addEventListener('DOMContentLoaded', function() {
+            // Verificar se é admin - redirecionar se não for
+            const urlParams = new URLSearchParams(window.location.search);
+            const cpf = urlParams.get('cpf') || localStorage.getItem('adminCPF');
+            
+            if (!cpf) {
+                // Redirecionar para página principal se não houver CPF
+                window.location.href = 'index.html';
+                return;
+            }
+
+            adminCPF = cpf;
+            loadQuickStats();
+        });
+    </script>
+</body>
+</html>

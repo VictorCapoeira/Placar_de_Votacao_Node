@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Acesso Bloqueado - Feira de Profissões</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    <style>
+        :root {
+            --primary: #004A8D;
+            --secondary: #F7941D;
+            --tertiary: #FDC180;
+        }
+        
+        body {
+            background: linear-gradient(135deg, var(--primary) 0%, #003875 50%, var(--secondary) 100%);
+            font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, 'Roboto', sans-serif;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        body::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255, 255, 255, 0.1) 0%, transparent 70%);
+            animation: rotate 20s linear infinite;
+        }
+        
+        @keyframes rotate {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .blocked-card {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.2);
+            max-width: 550px;
+            width: 90%;
+            padding: 0;
+            text-align: center;
+            animation: fadeInUp 0.8s ease-out;
+            position: relative;
+            z-index: 1;
+            overflow: hidden;
+        }
+        
+        .blocked-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 5px;
+            background: linear-gradient(90deg, var(--primary) 0%, var(--secondary) 100%);
+        }
+        
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        /* Estilos removidos - design atualizado com componentes Bootstrap modernos */
+        
+        /* Estilos do botão do placar removidos - funcionalidade restrita para administradores */
+        
+        .logo {
+            max-width: 80px;
+            margin-bottom: 1rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="blocked-card">
+        <div class="card-header border-0 text-center py-4" style="background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);">
+            <div class="d-flex justify-content-center mb-3">
+                <div class="bg-white rounded-circle p-3 shadow" style="width: 80px; height: 80px; display: flex; align-items: center; justify-content: center;">
+                    <i class="bi bi-shield-check-fill" style="font-size: 2rem; color: #28a745;"></i>
+                </div>
+            </div>
+            <h1 class="text-white fw-bold mb-2 h3">Voto já Registrado</h1>
+            <p class="text-white-50 mb-0">Participação confirmada com sucesso</p>
+        </div>
+        
+        <div class="card-body p-4">
+            <div class="alert alert-success border-0 mb-4" style="background: rgba(40, 167, 69, 0.1); border-radius: 12px;">
+                <div class="d-flex align-items-center">
+                    <i class="bi bi-check-circle-fill text-success me-3" style="font-size: 1.5rem;"></i>
+                    <div>
+                        <h5 class="alert-heading mb-1 text-success">Voto Computado!</h5>
+                        <p class="mb-0 text-muted">Seu voto foi registrado com sucesso em nosso sistema.</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="text-start mb-4">
+                <h5 class="text-primary mb-3">
+                    <i class="bi bi-info-circle-fill me-2"></i>Informações Importantes
+                </h5>
+                <ul class="list-unstyled">
+                    <li class="mb-2 d-flex align-items-start">
+                        <i class="bi bi-check2 text-success me-2 mt-1"></i>
+                        <span>Nosso sistema detectou que este CPF já participou da votação</span>
+                    </li>
+                    <li class="mb-2 d-flex align-items-start">
+                        <i class="bi bi-shield-check text-primary me-2 mt-1"></i>
+                        <span>Para garantir a <strong>transparência</strong> do processo, cada CPF pode votar <strong>apenas uma vez</strong></span>
+                    </li>
+                    <li class="mb-2 d-flex align-items-start">
+                        <i class="bi bi-heart-fill text-danger me-2 mt-1"></i>
+                        <span><strong>Obrigado</strong> por sua valiosa participação na nossa Feira de Profissões!</span>
+                    </li>
+                </ul>
+            </div>
+            
+            <div class="bg-light p-3 rounded-3 mb-4">
+                <small class="text-muted">
+                    <i class="bi bi-clock me-1"></i>
+                    Seu voto foi registrado em: <strong>" + new Date().toLocaleDateString('pt-BR') + "</strong>
+                </small>
+            </div>
+            
+            <!-- Botão do placar removido - acesso restrito apenas para administradores -->
+            
+            <div class="d-grid gap-2 mb-3">
+                <a href="index.html" class="btn btn-primary btn-lg" style="border-radius: 12px;">
+                    <i class="bi bi-arrow-left-circle me-2"></i>
+                    Voltar para Página Inicial
+                </a>
+            </div>
+            
+            <div class="text-center">
+                <small class="text-muted d-flex align-items-center justify-content-center">
+                    <i class="bi bi-question-circle me-1"></i>
+                    Dúvidas? Entre em contato com a organização do evento
+                </small>
+            </div>
+        </div>
+    </div>
+    
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
