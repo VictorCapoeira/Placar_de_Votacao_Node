@@ -16,7 +16,8 @@
     "db:seed": "node migrate.js seed",
     "db:rollback": "node migrate.js rollback",
     "db:status": "node migrate.js status",
-    "db:reset": "node reset-db.js"
+    "db:reset": "node reset-db.js",
+    "db:test": "node db-diagnostic.js"
   },
   "dependencies": {
     "express": "^4.19.2",

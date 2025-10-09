@@ -10,7 +10,12 @@ module.exports = {
       port: 3306,
       user: process.env.DB_USER || 'db_dtnidddiwulw',
       password: process.env.DB_PASSWORD || 'cI8C9O2nSwZ2ZmHfgJW5phzi',
-      database: process.env.DB_NAME || 'db_dtnidddiwulw'
+      database: process.env.DB_NAME || 'db_dtnidddiwulw',
+      acquireTimeout: 60000,
+      timeout: 60000,
+      ssl: {
+        rejectUnauthorized: false
+      }
     },
     migrations: {
       directory: './migrations',
@@ -28,7 +33,12 @@ module.exports = {
       port: process.env.DB_PORT || 3306,
       user: process.env.DB_USER || 'db_dtnidddiwulw',
       password: process.env.DB_PASSWORD || 'cI8C9O2nSwZ2ZmHfgJW5phzi',
-      database: process.env.DB_NAME || 'db_dtnidddiwulw'
+      database: process.env.DB_NAME || 'db_dtnidddiwulw',
+      acquireTimeout: 60000,
+      timeout: 60000,
+      ssl: {
+        rejectUnauthorized: false
+      }
     },
     migrations: {
       directory: './migrations',

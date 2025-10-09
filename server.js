@@ -22,7 +22,14 @@ const pool = mysql.createPool({
     database: DB_NAME,
     waitForConnections: true,
     connectionLimit: 10,
-    queueLimit: 0
+    queueLimit: 0,
+    acquireTimeout: 60000,
+    timeout: 60000,
+    enableKeepAlive: true,
+    keepAliveInitialDelay: 0,
+    ssl: {
+        rejectUnauthorized: false
+    }
 });
 
 // Função para validar CPF
@@ -67,6 +74,45 @@ app.use(express.static(path.join(__dirname, 'public')));
 // Health check simples para verificar se o servidor está no ar
 app.get('/api/health', (_req, res) => {
     res.json({ ok: true, time: new Date().toISOString() });
+});
+
+// Test database connection
+app.get('/api/db-test', async (req, res) => {
+    try {
+        console.log('🔍 Testando conexão com o banco...');
+        console.log(`Host: ${DB_HOST}`);
+        console.log(`User: ${DB_USER}`);
+        console.log(`Database: ${DB_NAME}`);
+        
+        const [rows] = await pool.query('SELECT 1 as test');
+        console.log('✅ Conexão com banco estabelecida com sucesso!');
+        
+        res.json({ 
+            ok: true, 
+            message: 'Conexão com banco estabelecida com sucesso!',
+            config: {
+                host: DB_HOST,
+                user: DB_USER,
+                database: DB_NAME
+            },
+            testResult: rows[0]
+        });
+    } catch (error) {
+        console.error('❌ Erro na conexão com banco:', error.message);
+        console.error('Código do erro:', error.code);
+        console.error('Detalhes:', error);
+        
+        res.status(500).json({ 
+            ok: false, 
+            error: error.message,
+            code: error.code,
+            config: {
+                host: DB_HOST,
+                user: DB_USER,
+                database: DB_NAME
+            }
+        });
+    }
 });
 
 // GET /api/imagens -> retorna lista de imagens disponíveis (suporta pastas por turma)
@@ -648,8 +694,34 @@ app.get('/api/placar', async (req, res) => {
     }
 });
 
+// Test database connection on startup
+async function testDatabaseConnection() {
+    try {
+        console.log('🔍 Testando conexão com banco de dados...');
+        console.log(`📍 Host: ${DB_HOST}`);
+        console.log(`👤 User: ${DB_USER}`);
+        console.log(`🗃️ Database: ${DB_NAME}`);
+        
+        const [rows] = await pool.query('SELECT 1 as connected, NOW() as timestamp');
+        console.log('✅ Conexão com banco estabelecida com sucesso!');
+        console.log(`⏰ Timestamp do banco: ${rows[0].timestamp}`);
+        return true;
+    } catch (error) {
+        console.error('❌ ERRO na conexão com banco de dados:');
+        console.error(`   Mensagem: ${error.message}`);
+        console.error(`   Código: ${error.code}`);
+        console.error(`   Host tentado: ${DB_HOST}`);
+        console.error('   Verifique as credenciais e conectividade de rede');
+        return false;
+    }
+}
+
 // Start server
-app.listen(PORT, () => {
-    console.log(`Servidor rodando em http://localhost:${PORT}`);
+app.listen(PORT, async () => {
+    console.log(`🚀 Servidor rodando na porta ${PORT}`);
+    console.log(`🌐 Acesse: http://localhost:${PORT}`);
+    
+    // Test database connection
+    await testDatabaseConnection();
 });
 
