@@ -14,23 +14,69 @@ const DB_USER = process.env.DB_USER || 'db_dtnidddiwulw';
 const DB_PASSWORD = process.env.DB_PASSWORD || 'cI8C9O2nSwZ2ZmHfgJW5phzi';
 const DB_NAME = process.env.DB_NAME || 'db_dtnidddiwulw';
 
+// Modo de operação: 'database' ou 'memory' (fallback)
+let OPERATION_MODE = 'database';
+let memoryData = {
+    turmas: [],
+    usuarios: new Map(),
+    votos: new Map()
+};
+
 // Cria um pool de conexões para eficiência e reuso (cada requisição pega uma, usa e devolve)
-const pool = mysql.createPool({
-    host: DB_HOST,
-    user: DB_USER,
-    password: DB_PASSWORD,
-    database: DB_NAME,
-    waitForConnections: true,
-    connectionLimit: 10,
-    queueLimit: 0,
-    acquireTimeout: 60000,
-    timeout: 60000,
-    enableKeepAlive: true,
-    keepAliveInitialDelay: 0,
-    ssl: {
-        rejectUnauthorized: false
-    }
-});
+let pool = null;
+
+try {
+    pool = mysql.createPool({
+        host: DB_HOST,
+        user: DB_USER,
+        password: DB_PASSWORD,
+        database: DB_NAME,
+        waitForConnections: true,
+        connectionLimit: 10,
+        queueLimit: 0,
+        acquireTimeout: 60000,
+        timeout: 60000,
+        enableKeepAlive: true,
+        keepAliveInitialDelay: 0,
+        ssl: {
+            rejectUnauthorized: false
+        }
+    });
+} catch (error) {
+    console.log('⚠️ Erro ao criar pool de conexões, usando modo memória');
+    OPERATION_MODE = 'memory';
+}
+
+// Dados em memória para modo fallback
+function initMemoryData() {
+    memoryData.turmas = [
+        {
+            id_turma: 1, nome_turma: 'Enfermagem', codigo_turma: '034',
+            projeto_turma: 'Saude e Tecnologia', descricao_projeto_turma: 'Saude e Tecnologia',
+            professor_turma: 'Leonardo', fotos_turma: '034', id_turno: 1, nome_turno: 'Matutino'
+        },
+        {
+            id_turma: 2, nome_turma: 'Desenvolvimento de Sistemas', codigo_turma: '035',
+            projeto_turma: 'Gestão de Gastos', descricao_projeto_turma: 'Sistema web para controle de finanças pessoais',
+            professor_turma: 'Mariana', fotos_turma: '035', id_turno: 1, nome_turno: 'Matutino'
+        },
+        {
+            id_turma: 3, nome_turma: 'Informática para Internet', codigo_turma: '036',
+            projeto_turma: 'Feira Online', descricao_projeto_turma: 'Plataforma digital para apresentação de cursos',
+            professor_turma: 'Carlos', fotos_turma: '036', id_turno: 1, nome_turno: 'Matutino'
+        },
+        {
+            id_turma: 4, nome_turma: 'Administração', codigo_turma: '037',
+            projeto_turma: 'Gestão Sustentável', descricao_projeto_turma: 'Projeto de práticas de gestão ambiental',
+            professor_turma: 'Fernanda', fotos_turma: '037', id_turno: 2, nome_turno: 'Vespertino'
+        },
+        {
+            id_turma: 5, nome_turma: 'Mecânica', codigo_turma: '038',
+            projeto_turma: 'Motores Elétricos', descricao_projeto_turma: 'Protótipo de motor sustentável para veículos',
+            professor_turma: 'Rafael', fotos_turma: '038', id_turno: 2, nome_turno: 'Vespertino'
+        }
+    ];
+}
 
 // Função para validar CPF
 function isValidCPF(cpf) {
@@ -73,7 +119,12 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 // Health check simples para verificar se o servidor está no ar
 app.get('/api/health', (_req, res) => {
-    res.json({ ok: true, time: new Date().toISOString() });
+    res.json({ 
+        ok: true, 
+        time: new Date().toISOString(),
+        mode: OPERATION_MODE,
+        database: OPERATION_MODE === 'database' ? 'Connected' : 'Memory fallback'
+    });
 });
 
 // Test database connection
@@ -330,15 +381,25 @@ app.get('/api/check-cpf/:cpf', async (req, res) => {
                 isAdmin: true,
                 canAccessPlacar: true,
                 redirectToDashboard: true,
-                message: 'Acesso administrativo autorizado. Redirecionando para dashboard...'
+                message: `Acesso administrativo autorizado (Modo: ${OPERATION_MODE})`
             });
         }
 
-        // Busca se existe usuário com este CPF
+        // Modo memória
+        if (OPERATION_MODE === 'memory') {
+            const hasVoted = memoryData.usuarios.has(cleanCPF);
+            return res.json({ 
+                hasVoted,
+                isAdmin: false,
+                canAccessPlacar: false,
+                message: hasVoted ? 'Este CPF já votou! (Modo memória)' : null
+            });
+        }
+
+        // Modo banco de dados
         const [[user]] = await pool.query('SELECT id_usuario FROM usuario WHERE cpf = ?', [cleanCPF]);
         
         if (!user) {
-            // CPF não existe na base, pode votar
             return res.json({ 
                 hasVoted: false, 
                 isAdmin: false,
@@ -346,25 +407,33 @@ app.get('/api/check-cpf/:cpf', async (req, res) => {
             });
         }
 
-        // Verifica se já votou
         const [[vote]] = await pool.query('SELECT id_votos FROM votos WHERE id_usuario = ?', [user.id_usuario]);
         
-        if (vote) {
-            return res.json({ 
-                hasVoted: true, 
-                message: 'Este CPF já votou!',
-                isAdmin: false,
-                canAccessPlacar: false 
-            });
-        }
-        
         res.json({ 
-            hasVoted: false,
+            hasVoted: !!vote,
             isAdmin: false,
-            canAccessPlacar: false 
+            canAccessPlacar: false,
+            message: vote ? 'Este CPF já votou!' : null
         });
     } catch (err) {
         console.error('Erro ao verificar CPF:', err.message, err.code || '', err.sqlMessage || '');
+        
+        // Fallback para modo memória em caso de erro de conexão
+        if (err.code === 'ETIMEDOUT' || err.code === 'ECONNREFUSED') {
+            console.log('🔄 Alternando para modo memória devido a erro de conexão');
+            OPERATION_MODE = 'memory';
+            initMemoryData();
+            
+            const hasVoted = memoryData.usuarios.has(cleanCPF);
+            return res.json({ 
+                hasVoted,
+                isAdmin: false,
+                canAccessPlacar: false,
+                message: hasVoted ? 'Este CPF já votou! (Modo memória)' : null,
+                fallback: true
+            });
+        }
+        
         res.status(500).json({ error: 'Falha ao verificar CPF.' });
     }
 });
@@ -490,127 +559,196 @@ app.post('/api/set-turno-ativo', async (req, res) => {
 });
 
 // GET /api/turmas -> retorna turmas do banco conforme turno ativo definido pelo admin
-// O turno é controlado globalmente, não mais por parâmetro de query
-// Observação: fotos_turma pode ser JSON (array) ou string com URLs separadas por vírgula
 app.get('/api/turmas', async (req, res) => {
     try {
-        let sql = `
-            SELECT t.id_turma,
-                   t.nome_turma,
-                   t.codigo_turma,
-                   t.projeto_turma,
-                   t.descricao_projeto_turma,
-                   t.fotos_turma,
-                   t.professor_turma,
-                   t.id_turno,
-                   tn.nome_turno
-            FROM turma t
-            LEFT JOIN turno tn ON t.id_turno = tn.id_turno
-        `;
-        
-        let params = [];
-        
-        // Filtra pelo turno ativo definido pelo administrador
-        if (TURNO_ATIVO) {
-            sql += ` WHERE LOWER(tn.nome_turno) = LOWER(?)`;
-            params.push(TURNO_ATIVO);
-        }
-        
-        sql += ` ORDER BY t.id_turma ASC`;
-        
-        const [rows] = await pool.query(sql, params);
+        let turmas = [];
 
-        // Mapeia para o formato esperado pelo frontend
-        const turmas = rows.map(r => {
-            // SEMPRE busca imagens usando codigo_turma como nome da pasta (NOVO COMPORTAMENTO)
-            let images = getImagensParaTurma(r.codigo_turma, r.id_turma); // Passa codigo_turma e id_turma para compatibilidade
+        // Modo memória
+        if (OPERATION_MODE === 'memory') {
+            let filteredTurmas = memoryData.turmas;
             
-            // Se não encontrou imagens locais, usa placeholder personalizado
-            if (images.length === 0) {
-                images = [
-                    `https://placehold.co/600x400/004A8D/white?text=${encodeURIComponent(r.nome_turma)}`
-                ];
+            if (TURNO_ATIVO) {
+                filteredTurmas = memoryData.turmas.filter(t => 
+                    t.nome_turno.toLowerCase() === TURNO_ATIVO.toLowerCase()
+                );
             }
+            
+            turmas = filteredTurmas.map(r => {
+                let images = getImagensParaTurma(r.codigo_turma, r.id_turma);
+                
+                if (images.length === 0) {
+                    images = [`https://placehold.co/600x400/004A8D/white?text=${encodeURIComponent(r.nome_turma)}`];
+                }
 
-            return {
-                id: r.id_turma,
-                code: r.codigo_turma,
-                name: r.nome_turma,
-                description: r.descricao_projeto_turma || r.projeto_turma || '',
-                teacher: r.professor_turma || '',
-                turno: r.nome_turno || '',
-                turnoId: r.id_turno || null,
-                images,
-                imageSource: images[0].includes('placehold.co') ? 'placeholder' : 'local'
-            };
-        });
+                return {
+                    id: r.id_turma,
+                    code: r.codigo_turma,
+                    name: r.nome_turma,
+                    description: r.descricao_projeto_turma || r.projeto_turma || '',
+                    teacher: r.professor_turma || '',
+                    turno: r.nome_turno || '',
+                    turnoId: r.id_turno || null,
+                    images,
+                    imageSource: images[0].includes('placehold.co') ? 'placeholder' : 'local'
+                };
+            });
+        } else {
+            // Modo banco de dados
+            let sql = `
+                SELECT t.id_turma, t.nome_turma, t.codigo_turma, t.projeto_turma,
+                       t.descricao_projeto_turma, t.fotos_turma, t.professor_turma,
+                       t.id_turno, tn.nome_turno
+                FROM turma t
+                LEFT JOIN turno tn ON t.id_turno = tn.id_turno
+            `;
+            
+            let params = [];
+            
+            if (TURNO_ATIVO) {
+                sql += ` WHERE LOWER(tn.nome_turno) = LOWER(?)`;
+                params.push(TURNO_ATIVO);
+            }
+            
+            sql += ` ORDER BY t.id_turma ASC`;
+            
+            const [rows] = await pool.query(sql, params);
+
+            turmas = rows.map(r => {
+                let images = getImagensParaTurma(r.codigo_turma, r.id_turma);
+                
+                if (images.length === 0) {
+                    images = [`https://placehold.co/600x400/004A8D/white?text=${encodeURIComponent(r.nome_turma)}`];
+                }
+
+                return {
+                    id: r.id_turma,
+                    code: r.codigo_turma,
+                    name: r.nome_turma,
+                    description: r.descricao_projeto_turma || r.projeto_turma || '',
+                    teacher: r.professor_turma || '',
+                    turno: r.nome_turno || '',
+                    turnoId: r.id_turno || null,
+                    images,
+                    imageSource: images[0].includes('placehold.co') ? 'placeholder' : 'local'
+                };
+            });
+        }
 
         res.json({
             turmas,
             turnoAtivo: TURNO_ATIVO,
             totalTurmas: turmas.length,
-            message: TURNO_ATIVO ? `Exibindo turmas do turno: ${TURNO_ATIVO}` : 'Exibindo todas as turmas'
+            mode: OPERATION_MODE,
+            message: TURNO_ATIVO ? `Exibindo turmas do turno: ${TURNO_ATIVO} (${OPERATION_MODE})` : `Exibindo todas as turmas (${OPERATION_MODE})`
         });
     } catch (err) {
-        // Log detalhado para diagnóstico de problemas de banco
         console.error('Erro ao buscar turmas:', err.message, err.code || '', err.sqlMessage || '');
+        
+        // Fallback para modo memória
+        if ((err.code === 'ETIMEDOUT' || err.code === 'ECONNREFUSED') && OPERATION_MODE === 'database') {
+            console.log('🔄 Alternando para modo memória devido a erro de conexão');
+            OPERATION_MODE = 'memory';
+            initMemoryData();
+            
+            // Rechama a função recursivamente no modo memória
+            return app._router.handle(req, res, () => {});
+        }
+        
         res.status(500).json({ error: 'Falha ao buscar turmas no banco de dados.' });
     }
 });
 
 // POST /api/vote -> body: { cpf: string (11 dígitos), id_turma: number }
-// Regras:
-// - Cria o usuário (CPF) se não existir
-// - Apenas um voto por CPF (bloqueia voto duplicado)
-// - Usa transação para consistência
 app.post('/api/vote', async (req, res) => {
     const { cpf, id_turma } = req.body || {};
     if (!cpf || !isValidCPF(cpf)) {
         return res.status(400).json({ error: 'CPF inválido. Verifique os números e tente novamente.' });
     }
     
-    // Remove formatação para consistência no banco
     const cleanCPF = String(cpf).replace(/\D/g, '');
     if (!id_turma || isNaN(Number(id_turma))) {
         return res.status(400).json({ error: 'id_turma inválido.' });
     }
 
-    const conn = await pool.getConnection();
     try {
-        await conn.beginTransaction(); // inicia transação
+        // Modo memória
+        if (OPERATION_MODE === 'memory') {
+            // Verifica se turma existe
+            const turmaExists = memoryData.turmas.find(t => t.id_turma === Number(id_turma));
+            if (!turmaExists) {
+                return res.status(404).json({ error: 'Turma não encontrada.' });
+            }
 
-        // Garante que a turma existe
-        const [[turma]] = await conn.query('SELECT id_turma FROM turma WHERE id_turma = ?', [id_turma]);
-        if (!turma) {
+            // Verifica se já votou
+            if (memoryData.usuarios.has(cleanCPF)) {
+                return res.status(409).json({ error: 'Este CPF já votou!', hasVoted: true });
+            }
+
+            // Registra voto
+            memoryData.usuarios.set(cleanCPF, Number(id_turma));
+            const currentVotes = memoryData.votos.get(Number(id_turma)) || 0;
+            memoryData.votos.set(Number(id_turma), currentVotes + 1);
+            
+            console.log(`✅ Voto registrado (Memória): CPF ${cleanCPF} → Turma ${id_turma}`);
+            return res.status(201).json({ ok: true, mode: 'memory' });
+        }
+
+        // Modo banco de dados
+        const conn = await pool.getConnection();
+        try {
+            await conn.beginTransaction();
+
+            const [[turma]] = await conn.query('SELECT id_turma FROM turma WHERE id_turma = ?', [id_turma]);
+            if (!turma) {
+                await conn.rollback();
+                return res.status(404).json({ error: 'Turma não encontrada.' });
+            }
+
+            let [[user]] = await conn.query('SELECT id_usuario FROM usuario WHERE cpf = ?', [cleanCPF]);
+            if (!user) {
+                const [result] = await conn.query('INSERT INTO usuario (cpf) VALUES (?)', [cleanCPF]);
+                user = { id_usuario: result.insertId };
+            }
+
+            const [[already]] = await conn.query('SELECT id_votos FROM votos WHERE id_usuario = ?', [user.id_usuario]);
+            if (already) {
+                await conn.rollback();
+                return res.status(409).json({ error: 'Este CPF já votou!', hasVoted: true });
+            }
+
+            await conn.query('INSERT INTO votos (id_usuario, id_turma) VALUES (?, ?)', [user.id_usuario, id_turma]);
+            await conn.commit();
+            
+            console.log(`✅ Voto registrado (Database): CPF ${cleanCPF} → Turma ${id_turma}`);
+            res.status(201).json({ ok: true, mode: 'database' });
+        } catch (err) {
             await conn.rollback();
-            return res.status(404).json({ error: 'Turma não encontrada.' });
+            throw err;
+        } finally {
+            conn.release();
         }
-
-        // Busca/cria usuário
-        let [[user]] = await conn.query('SELECT id_usuario FROM usuario WHERE cpf = ?', [cleanCPF]);
-        if (!user) {
-            const [result] = await conn.query('INSERT INTO usuario (cpf) VALUES (?)', [cleanCPF]);
-            user = { id_usuario: result.insertId };
-        }
-
-        // Verifica se já votou (uma vez por usuário)
-        const [[already]] = await conn.query('SELECT id_votos FROM votos WHERE id_usuario = ?', [user.id_usuario]);
-        if (already) {
-            await conn.rollback();
-            return res.status(409).json({ error: 'Este CPF já votou!', hasVoted: true });
-        }
-
-        // Registra voto
-        await conn.query('INSERT INTO votos (id_usuario, id_turma) VALUES (?, ?)', [user.id_usuario, id_turma]);
-        await conn.commit(); // finaliza transação com sucesso
-        res.status(201).json({ ok: true });
     } catch (err) {
-        await conn.rollback(); // desfaz alterações em caso de erro
-        // Log detalhado para diagnóstico
         console.error('Erro ao registrar voto:', err.message, err.code || '', err.sqlMessage || '');
+        
+        // Fallback para memória em caso de erro de conexão
+        if ((err.code === 'ETIMEDOUT' || err.code === 'ECONNREFUSED') && OPERATION_MODE === 'database') {
+            console.log('🔄 Alternando para modo memória para registrar voto');
+            OPERATION_MODE = 'memory';
+            initMemoryData();
+            
+            // Tenta registrar voto em memória
+            if (memoryData.usuarios.has(cleanCPF)) {
+                return res.status(409).json({ error: 'Este CPF já votou!', hasVoted: true, fallback: true });
+            }
+            
+            memoryData.usuarios.set(cleanCPF, Number(id_turma));
+            const currentVotes = memoryData.votos.get(Number(id_turma)) || 0;
+            memoryData.votos.set(Number(id_turma), currentVotes + 1);
+            
+            return res.status(201).json({ ok: true, mode: 'memory', fallback: true });
+        }
+        
         res.status(500).json({ error: 'Falha ao registrar voto.' });
-    } finally {
-        conn.release(); // devolve a conexão ao pool
     }
 });
 
@@ -621,12 +759,9 @@ const ADMIN_CPF = '81112848029';
 let TURNO_ATIVO = null; // null = todos os turnos, ou 'matutino', 'vespertino', 'noturno'
 
 // GET /api/placar -> retorna votos agregados por turma (ordem decrescente)
-// Usa o turno ativo definido globalmente pelo administrador
-// REQUER AUTENTICAÇÃO: apenas CPF administrativo pode acessar
 app.get('/api/placar', async (req, res) => {
     const { cpf } = req.query;
     
-    // Verifica se o CPF foi fornecido e se é válido
     if (!cpf || !isValidCPF(cpf)) {
         return res.status(401).json({ 
             error: 'Acesso negado. CPF inválido ou não fornecido.',
@@ -634,10 +769,8 @@ app.get('/api/placar', async (req, res) => {
         });
     }
     
-    // Remove formatação para comparação
     const cleanCPF = String(cpf).replace(/\D/g, '');
     
-    // Verifica se é o CPF administrativo
     if (cleanCPF !== ADMIN_CPF) {
         console.log(`Tentativa de acesso não autorizado ao placar com CPF: ${cleanCPF}`);
         return res.status(403).json({ 
@@ -647,55 +780,95 @@ app.get('/api/placar', async (req, res) => {
     }
     
     try {
-        let sql = `
-            SELECT t.id_turma,
-                   t.nome_turma,
-                   t.professor_turma,
-                   tn.nome_turno,
-                   COUNT(v.id_votos) AS votos
-            FROM turma t
-            LEFT JOIN turno tn ON t.id_turno = tn.id_turno
-            LEFT JOIN votos v ON v.id_turma = t.id_turma
-        `;
-        
-        let params = [];
-        
-        // Filtra pelo turno ativo definido globalmente pelo administrador
-        if (TURNO_ATIVO) {
-            sql += ` WHERE LOWER(tn.nome_turno) = LOWER(?)`;
-            params.push(TURNO_ATIVO);
+        let results = [];
+        let total = 0;
+
+        // Modo memória
+        if (OPERATION_MODE === 'memory') {
+            let filteredTurmas = memoryData.turmas;
+            
+            if (TURNO_ATIVO) {
+                filteredTurmas = memoryData.turmas.filter(t => 
+                    t.nome_turno.toLowerCase() === TURNO_ATIVO.toLowerCase()
+                );
+            }
+            
+            results = filteredTurmas.map(turma => ({
+                id_turma: turma.id_turma,
+                nome_turma: turma.nome_turma,
+                professor_turma: turma.professor_turma,
+                nome_turno: turma.nome_turno,
+                turno: turma.nome_turno,
+                votos: memoryData.votos.get(turma.id_turma) || 0
+            })).sort((a, b) => b.votos - a.votos || a.nome_turma.localeCompare(b.nome_turma));
+            
+            total = results.reduce((acc, r) => acc + r.votos, 0);
+        } else {
+            // Modo banco de dados
+            let sql = `
+                SELECT t.id_turma, t.nome_turma, t.professor_turma,
+                       tn.nome_turno, COUNT(v.id_votos) AS votos
+                FROM turma t
+                LEFT JOIN turno tn ON t.id_turno = tn.id_turno
+                LEFT JOIN votos v ON v.id_turma = t.id_turma
+            `;
+            
+            let params = [];
+            
+            if (TURNO_ATIVO) {
+                sql += ` WHERE LOWER(tn.nome_turno) = LOWER(?)`;
+                params.push(TURNO_ATIVO);
+            }
+            
+            sql += `
+                GROUP BY t.id_turma, t.nome_turma, t.professor_turma, tn.nome_turno
+                ORDER BY votos DESC, t.nome_turma ASC
+            `;
+            
+            const [rows] = await pool.query(sql, params);
+            total = rows.reduce((acc, r) => acc + Number(r.votos || 0), 0);
+            
+            results = rows.map(row => ({
+                ...row,
+                turno: row.nome_turno || 'Não definido'
+            }));
         }
         
-        sql += `
-            GROUP BY t.id_turma, t.nome_turma, t.professor_turma, tn.nome_turno
-            ORDER BY votos DESC, t.nome_turma ASC
-        `;
-        
-        const [rows] = await pool.query(sql, params);
-        const total = rows.reduce((acc, r) => acc + Number(r.votos || 0), 0);
-        
-        // Adiciona informação do turno nos resultados
-        const results = rows.map(row => ({
-            ...row,
-            turno: row.nome_turno || 'Não definido'
-        }));
-        
-        console.log(`Placar acessado pelo administrador (CPF: ${cleanCPF}${TURNO_ATIVO ? `, Turno ativo: ${TURNO_ATIVO}` : ', Todos os turnos'})`);
+        console.log(`Placar acessado pelo administrador (CPF: ${cleanCPF}, Modo: ${OPERATION_MODE}${TURNO_ATIVO ? `, Turno ativo: ${TURNO_ATIVO}` : ', Todos os turnos'})`);
         res.json({ 
             total, 
             results,
             turno: TURNO_ATIVO || 'geral',
             filtroAtivo: !!TURNO_ATIVO,
-            turnoAtivo: TURNO_ATIVO
+            turnoAtivo: TURNO_ATIVO,
+            mode: OPERATION_MODE
         });
     } catch (err) {
         console.error('Erro ao obter placar:', err.message, err.code || '', err.sqlMessage || '');
+        
+        // Fallback para memória
+        if ((err.code === 'ETIMEDOUT' || err.code === 'ECONNREFUSED') && OPERATION_MODE === 'database') {
+            console.log('🔄 Alternando para modo memória para exibir placar');
+            OPERATION_MODE = 'memory';
+            initMemoryData();
+            
+            // Rechama recursivamente no modo memória
+            return app._router.handle(req, res, () => {});
+        }
+        
         res.status(500).json({ error: 'Falha ao obter placar.' });
     }
 });
 
 // Test database connection on startup
 async function testDatabaseConnection() {
+    if (!pool) {
+        console.log('⚠️ Pool de conexão não criado, usando modo memória');
+        OPERATION_MODE = 'memory';
+        initMemoryData();
+        return false;
+    }
+
     try {
         console.log('🔍 Testando conexão com banco de dados...');
         console.log(`📍 Host: ${DB_HOST}`);
@@ -705,13 +878,17 @@ async function testDatabaseConnection() {
         const [rows] = await pool.query('SELECT 1 as connected, NOW() as timestamp');
         console.log('✅ Conexão com banco estabelecida com sucesso!');
         console.log(`⏰ Timestamp do banco: ${rows[0].timestamp}`);
+        OPERATION_MODE = 'database';
         return true;
     } catch (error) {
         console.error('❌ ERRO na conexão com banco de dados:');
         console.error(`   Mensagem: ${error.message}`);
         console.error(`   Código: ${error.code}`);
         console.error(`   Host tentado: ${DB_HOST}`);
-        console.error('   Verifique as credenciais e conectividade de rede');
+        console.error('   🔄 Alternando para modo MEMÓRIA como fallback');
+        
+        OPERATION_MODE = 'memory';
+        initMemoryData();
         return false;
     }
 }
@@ -722,6 +899,14 @@ app.listen(PORT, async () => {
     console.log(`🌐 Acesse: http://localhost:${PORT}`);
     
     // Test database connection
-    await testDatabaseConnection();
+    const dbConnected = await testDatabaseConnection();
+    
+    console.log(`🎯 Modo de operação: ${OPERATION_MODE.toUpperCase()}`);
+    if (OPERATION_MODE === 'memory') {
+        console.log('📝 Dados serão armazenados em memória (temporário)');
+        console.log('🔧 Para resolver: configure whitelist no UpCloud Database');
+    } else {
+        console.log('🗄️ Conectado ao banco MySQL com sucesso!');
+    }
 });
 
