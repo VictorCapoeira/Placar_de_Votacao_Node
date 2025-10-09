@@ -8,7 +8,7 @@ const mysql = require('mysql2/promise');
 const app = express();
 
 // Configuração básica via variáveis de ambiente (com padrões para desenvolvimento local)
-const PORT = process.env.PORT || 11550;
+const PORT = process.env.PORT || 80;
 const DB_HOST = process.env.DB_HOST || 'up-de-fra1-mysql-1.db.run-on-seenode.com';
 const DB_USER = process.env.DB_USER || 'db_dtnidddiwulw';
 const DB_PASSWORD = process.env.DB_PASSWORD || 'cI8C9O2nSwZ2ZmHfgJW5phzi';
@@ -74,6 +74,31 @@ function initMemoryData() {
             id_turma: 5, nome_turma: 'Mecânica', codigo_turma: '038',
             projeto_turma: 'Motores Elétricos', descricao_projeto_turma: 'Protótipo de motor sustentável para veículos',
             professor_turma: 'Rafael', fotos_turma: '038', id_turno: 2, nome_turno: 'Vespertino'
+        },
+        {
+            id_turma: 6, nome_turma: 'Eletrotécnica', codigo_turma: '039',
+            projeto_turma: 'Energia Solar', descricao_projeto_turma: 'Sistema de captação de energia solar em residências',
+            professor_turma: 'Patrícia', fotos_turma: '039', id_turno: 2, nome_turno: 'Vespertino'
+        },
+        {
+            id_turma: 7, nome_turma: 'Logística', codigo_turma: '040',
+            projeto_turma: 'Entrega Inteligente', descricao_projeto_turma: 'Otimização de rotas para transporte de cargas',
+            professor_turma: 'João', fotos_turma: '040', id_turno: 2, nome_turno: 'Vespertino'
+        },
+        {
+            id_turma: 8, nome_turma: 'Segurança do Trabalho', codigo_turma: '041',
+            projeto_turma: 'Ambiente Seguro', descricao_projeto_turma: 'Aplicativo para monitoramento de riscos em empresas',
+            professor_turma: 'Ana', fotos_turma: '041', id_turno: 3, nome_turno: 'Noturno'
+        },
+        {
+            id_turma: 9, nome_turma: 'Edificações', codigo_turma: '042',
+            projeto_turma: 'Construção Sustentável', descricao_projeto_turma: 'Materiais ecológicos para obras de baixo custo',
+            professor_turma: 'Roberto', fotos_turma: '042', id_turno: 3, nome_turno: 'Noturno'
+        },
+        {
+            id_turma: 10, nome_turma: 'Design Gráfico', codigo_turma: '043',
+            projeto_turma: 'Identidade Visual', descricao_projeto_turma: 'Criação de logotipo e branding para eventos culturais',
+            professor_turma: 'Juliana', fotos_turma: '043', id_turno: 3, nome_turno: 'Noturno'
         }
     ];
 }
@@ -458,44 +483,77 @@ app.get('/api/check-admin/:cpf', async (req, res) => {
 // GET /api/stats -> retorna estatísticas gerais do sistema (apenas para admin)
 app.get('/api/stats', async (req, res) => {
     try {
-        // Estatísticas gerais
-        const [totalTurmasResult] = await pool.query('SELECT COUNT(*) as count FROM turma');
-        const [totalVotosResult] = await pool.query('SELECT COUNT(*) as count FROM votos');
-        
-        // Estatísticas por turno
-        const [estatisticasPorTurno] = await pool.query(`
-            SELECT tn.nome_turno, COUNT(v.id_votos) as votos
-            FROM turno tn
-            LEFT JOIN turma t ON tn.id_turno = t.id_turno
-            LEFT JOIN votos v ON t.id_turma = v.id_turma
-            GROUP BY tn.id_turno, tn.nome_turno
-            ORDER BY tn.nome_turno ASC
-        `);
-        
-        const stats = {
-            totalTurmas: totalTurmasResult[0]?.count || 0,
-            totalVotos: totalVotosResult[0]?.count || 0,
+        let stats = {
+            totalTurmas: 0,
+            totalVotos: 0,
             votosMatutino: 0,
             votosVespertino: 0,
             votosNoturno: 0,
-            turnoAtivo: TURNO_ATIVO
+            turnoAtivo: TURNO_ATIVO,
+            mode: OPERATION_MODE
         };
-        
-        // Mapeia votos por turno
-        estatisticasPorTurno.forEach(turno => {
-            const nomeTurno = turno.nome_turno.toLowerCase();
-            if (nomeTurno === 'matutino') {
-                stats.votosMatutino = turno.votos;
-            } else if (nomeTurno === 'vespertino') {
-                stats.votosVespertino = turno.votos;
-            } else if (nomeTurno === 'noturno') {
-                stats.votosNoturno = turno.votos;
-            }
-        });
+
+        // Modo memória
+        if (OPERATION_MODE === 'memory') {
+            stats.totalTurmas = memoryData.turmas.length;
+            stats.totalVotos = Array.from(memoryData.votos.values()).reduce((acc, votos) => acc + votos, 0);
+            
+            // Conta votos por turno
+            memoryData.turmas.forEach(turma => {
+                const votos = memoryData.votos.get(turma.id_turma) || 0;
+                const nomeTurno = turma.nome_turno.toLowerCase();
+                
+                if (nomeTurno === 'matutino') {
+                    stats.votosMatutino += votos;
+                } else if (nomeTurno === 'vespertino') {
+                    stats.votosVespertino += votos;
+                } else if (nomeTurno === 'noturno') {
+                    stats.votosNoturno += votos;
+                }
+            });
+        } else {
+            // Modo banco de dados
+            const [totalTurmasResult] = await pool.query('SELECT COUNT(*) as count FROM turma');
+            const [totalVotosResult] = await pool.query('SELECT COUNT(*) as count FROM votos');
+            
+            const [estatisticasPorTurno] = await pool.query(`
+                SELECT tn.nome_turno, COUNT(v.id_votos) as votos
+                FROM turno tn
+                LEFT JOIN turma t ON tn.id_turno = t.id_turno
+                LEFT JOIN votos v ON t.id_turma = v.id_turma
+                GROUP BY tn.id_turno, tn.nome_turno
+                ORDER BY tn.nome_turno ASC
+            `);
+            
+            stats.totalTurmas = totalTurmasResult[0]?.count || 0;
+            stats.totalVotos = totalVotosResult[0]?.count || 0;
+            
+            estatisticasPorTurno.forEach(turno => {
+                const nomeTurno = turno.nome_turno.toLowerCase();
+                if (nomeTurno === 'matutino') {
+                    stats.votosMatutino = turno.votos;
+                } else if (nomeTurno === 'vespertino') {
+                    stats.votosVespertino = turno.votos;
+                } else if (nomeTurno === 'noturno') {
+                    stats.votosNoturno = turno.votos;
+                }
+            });
+        }
         
         res.json(stats);
     } catch (err) {
         console.error('Erro ao obter estatísticas:', err.message, err.code || '', err.sqlMessage || '');
+        
+        // Fallback para memória
+        if ((err.code === 'ETIMEDOUT' || err.code === 'ECONNREFUSED') && OPERATION_MODE === 'database') {
+            console.log('🔄 Alternando para modo memória para estatísticas');
+            OPERATION_MODE = 'memory';
+            initMemoryData();
+            
+            // Rechama recursivamente
+            return app._router.handle(req, res, () => {});
+        }
+        
         res.status(500).json({ error: 'Falha ao obter estatísticas.' });
     }
 });
