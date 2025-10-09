@@ -6,11 +6,11 @@ module.exports = {
   development: {
     client: 'mysql2',
     connection: {
-      host: process.env.DB_HOST || 'localhost',
+      host: process.env.DB_HOST || 'up-de-fra1-mysql-1.db.run-on-seenode.com',
       port: 3306,
-      user: process.env.DB_USER || 'root',
-      password: process.env.DB_PASSWORD || '1234',
-      database: process.env.DB_NAME || 'sistema_de_votos'
+      user: process.env.DB_USER || 'db_dtnidddiwulw',
+      password: process.env.DB_PASSWORD || 'cI8C9O2nSwZ2ZmHfgJW5phzi',
+      database: process.env.DB_NAME || 'db_dtnidddiwulw'
     },
     migrations: {
       directory: './migrations',
@@ -24,11 +24,11 @@ module.exports = {
   production: {
     client: 'mysql2',
     connection: {
-      host: process.env.DB_HOST,
+      host: process.env.DB_HOST || 'up-de-fra1-mysql-1.db.run-on-seenode.com',
       port: process.env.DB_PORT || 3306,
-      user: process.env.DB_USER,
-      password: process.env.DB_PASSWORD,
-      database: process.env.DB_NAME
+      user: process.env.DB_USER || 'db_dtnidddiwulw',
+      password: process.env.DB_PASSWORD || 'cI8C9O2nSwZ2ZmHfgJW5phzi',
+      database: process.env.DB_NAME || 'db_dtnidddiwulw'
     },
     migrations: {
       directory: './migrations',

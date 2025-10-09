@@ -1,9 +1,15 @@
 {
   "name": "senacProNode",
   "version": "1.0.0",
+  "description": "Sistema de votação para projetos SENAC",
   "main": "server.js",
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=8.0.0"
+  },
   "scripts": {
     "start": "node server.js",
+    "build": "echo 'No build step required for Node.js server'",
     "dev": "nodemon server.js",
     "db:init": "node migrate.js init",
     "db:migrate": "node migrate.js migrate",
