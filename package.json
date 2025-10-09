@@ -9,6 +9,7 @@
   },
   "scripts": {
     "start": "node server.js",
+    "start:mock": "node server-mock.js",
     "build": "echo 'No build step required for Node.js server'",
     "dev": "nodemon server.js",
     "db:init": "node migrate.js init",
