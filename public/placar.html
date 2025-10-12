@@ -12,12 +12,121 @@
             --secondary: #F7941D;
             --tertiary: #FDC180;
         }
+
+        html {
+            height: 100%;
+        }
         
         body {
             background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
             font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, 'Roboto', sans-serif;
-            line-height: 1.6;
+            line-height: 1.4;
             color: #343a40;
+            min-height: 100%;
+            display: flex;
+            flex-direction: column;
+        }
+
+        main {
+            flex: 1 0 auto;
+        }
+
+        footer {
+            flex-shrink: 0;
+        }
+
+        /* Compactação geral da página */
+        main.container {
+            padding-top: 1rem !important;
+            padding-bottom: 1rem !important;
+        }
+
+        .row.mb-5 {
+            margin-bottom: 1.5rem !important;
+        }
+
+        .row.mb-4 {
+            margin-bottom: 1rem !important;
+        }
+
+        .row.mb-3 {
+            margin-bottom: 0.8rem !important;
+        }
+
+        .py-4 {
+            padding-top: 1rem !important;
+            padding-bottom: 1rem !important;
+        }
+
+        .py-3 {
+            padding-top: 0.8rem !important;
+            padding-bottom: 0.8rem !important;
+        }
+
+        /* Compactação de títulos */
+        .display-4 {
+            font-size: 2rem !important;
+            margin-bottom: 0.5rem !important;
+        }
+
+        .display-6 {
+            font-size: 1.5rem !important;
+            margin-bottom: 0.5rem !important;
+        }
+
+        h1.display-4 {
+            margin-bottom: 1rem !important;
+        }
+
+        h2.display-6 {
+            margin-bottom: 1rem !important;
+        }
+
+        /* Compactação do pódio */
+        #podiumContainer {
+            min-height: 320px !important;
+            gap: 1rem !important;
+            padding-bottom: 1rem !important;
+        }
+
+        .hero-section {
+            padding-top: 0.5rem !important;
+            padding-bottom: 0.5rem !important;
+        }
+
+        /* Compactação da tabela */
+        .table {
+            font-size: 0.9rem;
+            margin-bottom: 1rem;
+        }
+
+        .table thead th {
+            padding: 0.6rem 0.5rem;
+        }
+
+        .table tbody td {
+            padding: 0.6rem 0.5rem;
+        }
+
+        /* Compactação adicional de elementos */
+        .text-center h2 {
+            margin-bottom: 1rem !important;
+        }
+
+        .fs-5 {
+            font-size: 1.1rem !important;
+        }
+
+        .bg-light.rounded-pill {
+            padding: 0.5rem 1rem !important;
+        }
+
+        .card-header {
+            padding: 1.2rem !important;
+        }
+
+        .card-body {
+            padding: 1.2rem !important;
         }
         
         .bg-primary {
@@ -55,13 +164,14 @@
         }
         
         .podium-card {
-            border-radius: 15px;
-            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+            border-radius: 12px;
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
             transition: all 0.3s ease;
             overflow: hidden;
             position: relative;
             display: flex;
             flex-direction: column;
+            max-height: 300px;
         }
         
         .podium-card:hover {
@@ -70,7 +180,7 @@
         }
         
         .podium-header {
-            padding: 1rem;
+            padding: 0.7rem;
             text-align: center;
             position: relative;
         }
@@ -79,24 +189,25 @@
             display: inline-flex;
             align-items: center;
             justify-content: center;
-            width: 60px;
-            height: 60px;
+            width: 50px;
+            height: 50px;
             border-radius: 50%;
             color: white;
             font-weight: bold;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
-            background: rgba(255, 255, 255, 0.2);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4), inset 0 2px 5px rgba(255, 255, 255, 0.3);
+            background: rgba(0, 0, 0, 0.3);
             backdrop-filter: blur(10px);
+            border: 2px solid rgba(255, 255, 255, 0.4);
         }
         
         .position-number {
-            font-size: 1.5rem;
+            font-size: 1.3rem;
             font-weight: 900;
-            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+            text-shadow: 2px 2px 6px rgba(0, 0, 0, 0.8), 0 0 10px rgba(0, 0, 0, 0.5);
         }
         
         .podium-content {
-            padding: 0 1.5rem 1.5rem;
+            padding: 0 1rem 1rem;
             flex-grow: 1;
             display: flex;
             flex-direction: column;
@@ -105,83 +216,159 @@
         
         .course-info {
             text-align: center;
-            margin-bottom: 1.5rem;
+            margin-bottom: 1rem;
         }
         
         .course-name {
-            font-size: 1.1rem;
+            font-size: 1rem;
             font-weight: bold;
-            color: white;
-            margin-bottom: 0.8rem;
-            line-height: 1.3;
-            word-wrap: break-word;
-            overflow-wrap: break-word;
-            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.4);
-        }
-        
-        .professor-name {
-            font-size: 0.9rem;
-            color: rgba(255, 255, 255, 0.9);
-            margin: 0;
+            color: #FFFFFF;
+            margin-bottom: 0.5rem;
             line-height: 1.2;
             word-wrap: break-word;
             overflow-wrap: break-word;
-            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
+            text-shadow: 2px 2px 6px rgba(0, 0, 0, 0.7), 0 0 10px rgba(0, 0, 0, 0.5);
+        }
+        
+        .professor-name {
+            font-size: 0.85rem;
+            color: rgba(255, 255, 255, 0.95);
+            margin: 0;
+            line-height: 1.1;
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.6), 0 0 8px rgba(0, 0, 0, 0.4);
+            font-weight: 500;
         }
         
         .vote-stats {
             text-align: center;
-            background: rgba(255, 255, 255, 0.15);
-            border-radius: 10px;
-            padding: 1rem;
-            backdrop-filter: blur(5px);
+            background: rgba(0, 0, 0, 0.25);
+            border-radius: 8px;
+            padding: 0.7rem;
+            backdrop-filter: blur(8px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
         }
         
         .vote-count {
-            margin-bottom: 0.5rem;
+            margin-bottom: 0.3rem;
         }
         
         .vote-count .number {
-            font-size: 2rem;
-            font-weight: bold;
-            color: white;
+            font-size: 1.5rem;
+            font-weight: 900;
+            color: #FFFFFF;
             display: block;
-            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.4);
+            text-shadow: 2px 2px 6px rgba(0, 0, 0, 0.7), 0 0 10px rgba(0, 0, 0, 0.5);
         }
         
         .vote-count .label {
-            font-size: 0.8rem;
-            color: rgba(255, 255, 255, 0.8);
+            font-size: 0.75rem;
+            color: rgba(255, 255, 255, 0.95);
             text-transform: uppercase;
             letter-spacing: 0.5px;
+            text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.6);
+            font-weight: 600;
         }
         
         .vote-percentage {
-            font-size: 1.1rem;
-            font-weight: bold;
-            color: #333;
-            background: white;
-            padding: 0.3rem 0.8rem;
-            border-radius: 15px;
+            font-size: 0.95rem;
+            font-weight: 800;
+            color: #1A1A1A;
+            background: linear-gradient(135deg, #FFFFFF 0%, #F5F5F5 100%);
+            padding: 0.3rem 0.7rem;
+            border-radius: 12px;
             display: inline-block;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.8);
         }
         
         .first-place {
-            background: linear-gradient(135deg, #FFD700 0%, #FFA500 50%, #FF8C00 100%);
+            background: linear-gradient(135deg, #FFB300 0%, #FF8F00 50%, #FF6F00 100%);
             z-index: 3;
-            transform: translateY(-80px);
+            transform: translateY(-50px);
+            border: 3px solid #FFD54F;
+            box-shadow: 0 8px 30px rgba(255, 179, 0, 0.4), inset 0 2px 10px rgba(255, 255, 255, 0.3);
+        }
+
+        .first-place::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.8), transparent);
         }
         
         .second-place {
-            background: linear-gradient(135deg, #C0C0C0 0%, #E8E8E8 50%, #B8B8B8 100%);
+            background: linear-gradient(135deg, #78909C 0%, #90A4AE 50%, #607D8B 100%);
             z-index: 2;
-            transform: translateY(-40px);
+            transform: translateY(-25px);
+            border: 3px solid #B0BEC5;
+            box-shadow: 0 8px 30px rgba(96, 125, 139, 0.3), inset 0 2px 10px rgba(255, 255, 255, 0.3);
+        }
+
+        .second-place::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.7), transparent);
         }
         
         .third-place {
-            background: linear-gradient(135deg, #CD7F32 0%, #D2691E 50%, #A0522D 100%);
+            background: linear-gradient(135deg, #A1887F 0%, #8D6E63 50%, #6D4C41 100%);
             z-index: 1;
+            transform: translateY(0);
+            border: 3px solid #BCAAA4;
+            box-shadow: 0 8px 30px rgba(109, 76, 65, 0.3), inset 0 2px 10px rgba(255, 255, 255, 0.3);
+        }
+
+        .third-place::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.6), transparent);
+        }
+
+        /* Estilos específicos por posição */
+        .first-place .position-badge {
+            background: rgba(255, 193, 7, 0.3);
+            border-color: #FFD54F;
+            box-shadow: 0 4px 20px rgba(255, 179, 0, 0.6), inset 0 2px 5px rgba(255, 255, 255, 0.4);
+        }
+
+        .second-place .position-badge {
+            background: rgba(144, 164, 174, 0.3);
+            border-color: #B0BEC5;
+            box-shadow: 0 4px 20px rgba(96, 125, 139, 0.5), inset 0 2px 5px rgba(255, 255, 255, 0.4);
+        }
+
+        .third-place .position-badge {
+            background: rgba(141, 110, 99, 0.3);
+            border-color: #BCAAA4;
+            box-shadow: 0 4px 20px rgba(109, 76, 65, 0.5), inset 0 2px 5px rgba(255, 255, 255, 0.4);
+        }
+
+        /* Animação sutil ao hover */
+        .first-place:hover {
+            transform: translateY(-50px) scale(1.03);
+            box-shadow: 0 12px 40px rgba(255, 179, 0, 0.5), inset 0 2px 10px rgba(255, 255, 255, 0.3);
+        }
+
+        .second-place:hover {
+            transform: translateY(-25px) scale(1.03);
+            box-shadow: 0 12px 40px rgba(96, 125, 139, 0.4), inset 0 2px 10px rgba(255, 255, 255, 0.3);
+        }
+
+        .third-place:hover {
+            transform: translateY(0) scale(1.03);
+            box-shadow: 0 12px 40px rgba(109, 76, 65, 0.4), inset 0 2px 10px rgba(255, 255, 255, 0.3);
         }
         
         .other-place {
@@ -192,11 +379,11 @@
 
         
         .podium-number {
-            font-size: 3.5rem;
+            font-size: 2.5rem;
             font-weight: 900;
-            color: white;
-            text-shadow: 3px 3px 6px rgba(0, 0, 0, 0.5);
-            margin-bottom: 1rem;
+            color: #FFFFFF;
+            text-shadow: 3px 3px 8px rgba(0, 0, 0, 0.8), 0 0 15px rgba(0, 0, 0, 0.6);
+            margin-bottom: 0.5rem;
             display: inline-flex;
             align-items: center;
             justify-content: center;
@@ -222,9 +409,56 @@
             60% { transform: translateY(-5px); }
         }
         
+        /* Footer compacto */
         footer {
             background-color: var(--primary);
             color: white;
+            padding: 1.2rem 0;
+            font-size: 0.85rem;
+        }
+
+        footer h5 {
+            font-size: 1rem;
+            margin-bottom: 0.4rem;
+        }
+
+        footer p,
+        footer li {
+            margin-bottom: 0.25rem;
+            line-height: 1.35;
+        }
+
+        footer a {
+            color: white;
+            text-decoration: none;
+        }
+
+        footer a:hover {
+            text-decoration: underline;
+        }
+
+        footer .social-icons i {
+            font-size: 1.1rem;
+            margin-right: 0.3rem;
+        }
+
+        @media (max-width: 576px) {
+            footer {
+                padding: 0.8rem 0;
+                font-size: 0.8rem;
+            }
+            footer h5 {
+                font-size: 0.95rem;
+            }
+            footer p,
+            footer li {
+                margin-bottom: 0.2rem;
+                line-height: 1.3;
+            }
+            footer .social-icons i {
+                font-size: 1rem;
+                margin-right: 0.2rem;
+            }
         }
         
         .teacher-name {
@@ -240,20 +474,37 @@
             .podium-container {
                 flex-direction: column;
                 align-items: center;
-                gap: 1.5rem !important;
-                min-height: 300px !important;
+                gap: 0.8rem !important;
+                min-height: 240px !important;
             }
             .podium-card {
                 width: 90% !important;
-                max-width: 300px;
-                height: 350px !important;
+                max-width: 280px;
+                height: 280px !important;
                 margin-top: 0 !important;
+                max-height: 280px !important;
+            }
+            .first-place, .second-place, .third-place {
+                transform: translateY(0) !important;
             }
             .course-name {
-                font-size: 1rem;
+                font-size: 0.95rem;
             }
             .professor-name {
-                font-size: 0.85rem;
+                font-size: 0.8rem;
+            }
+            .vote-count .number {
+                font-size: 1.3rem;
+            }
+            .podium-number {
+                font-size: 2rem;
+                margin-bottom: 0.3rem;
+            }
+            .display-4 {
+                font-size: 1.5rem !important;
+            }
+            .display-6 {
+                font-size: 1.2rem !important;
             }
         }
     </style>
@@ -352,34 +603,13 @@
             <div class="row mb-5">
                 <div class="col-12 text-center">
                     <div class="hero-section py-4">
-                        <div class="d-flex justify-content-center mb-3">
-                            <div class="bg-white rounded-circle p-3 shadow" style="width: 80px; height: 80px; display: flex; align-items: center; justify-content: center;">
-                                <i class="bi bi-trophy-fill" style="font-size: 2rem; color: var(--secondary);"></i>
-                            </div>
-                        </div>
+                        
                         <h1 class="display-4 fw-bold text-primary mb-3" style="text-shadow: 2px 2px 4px rgba(0,0,0,0.1);">
                             Placar de Votação
                         </h1>
-                        <p class="lead text-muted mb-4" style="font-size: 1.25rem; max-width: 600px; margin: 0 auto;">
-                            Acompanhe em tempo real os resultados dos projetos mais votados da nossa feira
-                        </p>
-                        <div class="d-flex justify-content-center align-items-center gap-3 flex-wrap mb-4">
-                            <span class="badge bg-success px-3 py-2 rounded-pill">
-                                <i class="bi bi-graph-up-arrow me-1"></i>Tempo Real
-                            </span>
-                            <span class="badge bg-primary px-3 py-2 rounded-pill">
-                                <i class="bi bi-people-fill me-1"></i>Resultados Oficiais
-                            </span>
-                            <span class="badge bg-secondary px-3 py-2 rounded-pill">
-                                <i class="bi bi-calendar-event me-1"></i>Feira 2024
-                            </span>
-                        </div>
+            
                     </div>
-                    <div class="d-flex justify-content-center align-items-center mt-3">
-                    <div class="bg-primary text-white px-3 py-2 rounded-circle me-2">
-                        <i class="bi bi-arrow-repeat"></i>
-                    </div>
-                    <span class="text-muted">Atualizando automaticamente</span>
+            
                 </div>
             </div>
         </div>
@@ -390,9 +620,8 @@
                 <div class="text-center mb-5">
                     <h2 class="display-6 fw-bold text-primary mb-3">
                         <i class="bi bi-trophy-fill me-3" style="color: var(--secondary); font-size: 2rem;"></i>
-                        Pódio dos Vencedores
+                        Pódio das turmas
                     </h2>
-                    <p class="text-muted mb-0">Os três projetos mais votados da nossa feira</p>
                 </div>
                 <div class="d-flex podium-container justify-content-center align-items-end" id="podiumContainer" style="min-height: 500px; gap: 2rem; padding-bottom: 2rem;"></div>
             </div>
@@ -434,34 +663,39 @@
     </main>
 
     <!-- Footer -->
-    <footer class="py-4 mt-5">
+    <footer>
         <div class="container">
             <div class="row">
+                <!-- Feira de Profissões -->
                 <div class="col-md-4 mb-3 mb-md-0">
                     <h5>Feira de Profissões</h5>
                     <p>Uma iniciativa da instituição para conectar alunos e o mercado de trabalho.</p>
                 </div>
+       
+                <!-- Contato -->
                 <div class="col-md-4 mb-3 mb-md-0">
                     <h5>Contato</h5>
                     <ul class="list-unstyled">
-                        <li><i class="bi bi-geo-alt-fill me-2"></i> Rua Exemplo, 123 - Cidade</li>
-                        <li><i class="bi bi-telephone-fill me-2"></i> (00) 0000-0000</li>
-                        <li><i class="bi bi-envelope-fill me-2"></i> contato@instituicao.com</li>
+                        <li><i class="bi bi-telephone-fill me-2"></i> (31) 3801-1200</li>
+                        <li><i class="bi bi-geo-alt-fill me-2"></i> R. Itajubá, 250 - Centro, Ipatinga</li>
+                        <li><i class="bi bi-envelope-fill me-2"></i> faleconosco@mg.senac.br</li>
                     </ul>
                 </div>
+       
+                <!-- Redes Sociais -->
                 <div class="col-md-4">
                     <h5>Redes Sociais</h5>
-                    <div class="d-flex gap-3 fs-4">
-                        <a href="#" class="text-light"><i class="bi bi-facebook"></i></a>
-                        <a href="#" class="text-light"><i class="bi bi-instagram"></i></a>
-                        <a href="#" class="text-light"><i class="bi bi-twitter"></i></a>
-                        <a href="#" class="text-light"><i class="bi bi-youtube"></i></a>
+                    <div class="d-flex gap-3 social-icons">
+                        <a href="https://www.facebook.com/senacminasgerais" target="_blank"><i class="bi bi-facebook"></i></a>
+                        <a href="https://www.instagram.com/senacminas" target="_blank"><i class="bi bi-instagram"></i></a>
+                        <a href="https://www.linkedin.com/company/senacminas" target="_blank"><i class="bi bi-linkedin"></i></a>
+                        <a href="https://www.youtube.com/user/senacminasgerais" target="_blank"><i class="bi bi-youtube"></i></a>
                     </div>
                 </div>
             </div>
-            <hr class="my-4 bg-light">
+            <hr class="my-4 bg-light" />
             <div class="text-center">
-                <p class="mb-0">&copy; 2023 Instituição de Ensino. Todos os direitos reservados.</p>
+                <p class="mb-0">&copy; 2025 Senac Minas. Todos os direitos reservados.</p>
             </div>
         </div>
     </footer>

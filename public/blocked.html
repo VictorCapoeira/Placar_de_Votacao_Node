@@ -12,11 +12,16 @@
             --secondary: #F7941D;
             --tertiary: #FDC180;
         }
+
+        html {
+            height: 100%;
+        }
         
         body {
             background: linear-gradient(135deg, var(--primary) 0%, #003875 50%, var(--secondary) 100%);
             font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, 'Roboto', sans-serif;
-            min-height: 100vh;
+            min-height: 100%;
+            height: 100%;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -93,21 +98,10 @@
                     <i class="bi bi-shield-check-fill" style="font-size: 2rem; color: #28a745;"></i>
                 </div>
             </div>
-            <h1 class="text-white fw-bold mb-2 h3">Voto já Registrado</h1>
-            <p class="text-white-50 mb-0">Participação confirmada com sucesso</p>
+            <h1 class="text-white fw-bold mb-2 h3">VOCÊ JÁ VOTOU!</h1>
         </div>
         
-        <div class="card-body p-4">
-            <div class="alert alert-success border-0 mb-4" style="background: rgba(40, 167, 69, 0.1); border-radius: 12px;">
-                <div class="d-flex align-items-center">
-                    <i class="bi bi-check-circle-fill text-success me-3" style="font-size: 1.5rem;"></i>
-                    <div>
-                        <h5 class="alert-heading mb-1 text-success">Voto Computado!</h5>
-                        <p class="mb-0 text-muted">Seu voto foi registrado com sucesso em nosso sistema.</p>
-                    </div>
-                </div>
-            </div>
-            
+        <div class="card-body p-4">  
             <div class="text-start mb-4">
                 <h5 class="text-primary mb-3">
                     <i class="bi bi-info-circle-fill me-2"></i>Informações Importantes
@@ -121,19 +115,9 @@
                         <i class="bi bi-shield-check text-primary me-2 mt-1"></i>
                         <span>Para garantir a <strong>transparência</strong> do processo, cada CPF pode votar <strong>apenas uma vez</strong></span>
                     </li>
-                    <li class="mb-2 d-flex align-items-start">
-                        <i class="bi bi-heart-fill text-danger me-2 mt-1"></i>
-                        <span><strong>Obrigado</strong> por sua valiosa participação na nossa Feira de Profissões!</span>
-                    </li>
                 </ul>
             </div>
             
-            <div class="bg-light p-3 rounded-3 mb-4">
-                <small class="text-muted">
-                    <i class="bi bi-clock me-1"></i>
-                    Seu voto foi registrado em: <strong>" + new Date().toLocaleDateString('pt-BR') + "</strong>
-                </small>
-            </div>
             
             <!-- Botão do placar removido - acesso restrito apenas para administradores -->
             
