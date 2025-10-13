@@ -861,8 +861,31 @@
                 return;
             }
             
-            // Removido: não atualizar o pódio automaticamente
-            // O pódio só será renderizado ao autenticar
+            try {
+                // Busca dados atualizados do servidor
+                const resp = await fetch(`/api/placar?cpf=${authenticatedCPF}`);
+                
+                if (resp.ok) {
+                    const data = await resp.json();
+                    
+                    // Atualiza título do placar baseado no turno
+                    updatePlacarTitle(data.turnoAtivo, data.filtroAtivo);
+                    
+                    // Renderiza pódio e tabela com dados atualizados
+                    renderPodium(data.results, data.total);
+                    renderTable(data.results, data.total);
+                    document.getElementById('totalVotos').textContent = String(data.total || 0);
+                    
+                    // Atualiza badge do turno se houver filtro
+                    if (data.filtroAtivo) {
+                        addTurnoBadge(data.turnoAtivo);
+                    }
+                } else {
+                    console.error('Erro ao carregar placar:', resp.status);
+                }
+            } catch (e) {
+                console.error('Erro ao atualizar placar:', e);
+            }
         }
         
         // Event listeners
@@ -1032,9 +1055,8 @@
             });
         }
 
-        // Atualiza automaticamente a cada 30s
-        setInterval(loadScoreboard, 3000);
-        document.addEventListener('DOMContentLoaded', loadScoreboard);
+        // Atualiza automaticamente a cada 5 segundos
+        setInterval(loadScoreboard, 5000);
     </script>
 </body>
 </html>
