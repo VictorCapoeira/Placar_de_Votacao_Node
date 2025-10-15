@@ -524,6 +524,71 @@
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
+        // ============================================
+        // SISTEMA DE SEGURANÇA POR DISPOSITIVO
+        // ============================================
+        
+        const DEVICE_VOTE_KEY = 'senac_device_voted';
+        const DEVICE_VOTE_TIMESTAMP_KEY = 'senac_device_vote_timestamp';
+        const DEVICE_FINGERPRINT_KEY = 'senac_device_fingerprint';
+
+        // Gera um fingerprint único do dispositivo
+        function generateDeviceFingerprint() {
+            const data = [
+                navigator.userAgent,
+                navigator.language,
+                screen.width + 'x' + screen.height,
+                screen.colorDepth,
+                new Date().getTimezoneOffset(),
+                !!window.sessionStorage,
+                !!window.localStorage
+            ].join('|');
+            
+            // Hash simples para criar ID único
+            let hash = 0;
+            for (let i = 0; i < data.length; i++) {
+                const char = data.charCodeAt(i);
+                hash = ((hash << 5) - hash) + char;
+                hash = hash & hash;
+            }
+            return 'device_' + Math.abs(hash).toString(36);
+        }
+
+        // Verifica se o dispositivo já votou
+        function hasDeviceVoted() {
+            const deviceVoted = localStorage.getItem(DEVICE_VOTE_KEY);
+            const deviceFingerprint = localStorage.getItem(DEVICE_FINGERPRINT_KEY);
+            const currentFingerprint = generateDeviceFingerprint();
+            
+            // Verifica se há registro de voto E se o fingerprint bate
+            return deviceVoted === 'true' && deviceFingerprint === currentFingerprint;
+        }
+
+        // Marca o dispositivo como tendo votado
+        function markDeviceAsVoted() {
+            const timestamp = new Date().toISOString();
+            const fingerprint = generateDeviceFingerprint();
+            
+            localStorage.setItem(DEVICE_VOTE_KEY, 'true');
+            localStorage.setItem(DEVICE_VOTE_TIMESTAMP_KEY, timestamp);
+            localStorage.setItem(DEVICE_FINGERPRINT_KEY, fingerprint);
+            
+            console.log('🔒 Dispositivo marcado como votante:', fingerprint);
+        }
+
+        // Obtém informações do voto do dispositivo
+        function getDeviceVoteInfo() {
+            return {
+                hasVoted: hasDeviceVoted(),
+                timestamp: localStorage.getItem(DEVICE_VOTE_TIMESTAMP_KEY),
+                fingerprint: localStorage.getItem(DEVICE_FINGERPRINT_KEY)
+            };
+        }
+
+        // ============================================
+        // FUNÇÕES PRINCIPAIS DO SISTEMA
+        // ============================================
+        
         // Estado global simples para manter o CPF durante a sessão da página
         let currentCPF = null;
 
@@ -569,6 +634,27 @@
 
         // 1) Exibe modal de CPF ao carregar e valida CPF
         document.addEventListener('DOMContentLoaded', function() {
+            // ============================================
+            // VERIFICA SE O DISPOSITIVO JÁ VOTOU
+            // ============================================
+            if (hasDeviceVoted()) {
+                const voteInfo = getDeviceVoteInfo();
+                const voteDate = new Date(voteInfo.timestamp);
+                const formattedDate = voteDate.toLocaleString('pt-BR', {
+                    day: '2-digit',
+                    month: '2-digit',
+                    year: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                });
+                
+                console.log('🚫 Dispositivo já votou anteriormente');
+                
+                // Redireciona para página de bloqueio
+                showDeviceBlockedModal(formattedDate);
+                return;
+            }
+            
             const cpfModal = new bootstrap.Modal(document.getElementById('cpfModal'));
             const cpfInput = document.getElementById('cpfInput');
             
@@ -687,6 +773,63 @@
             document.getElementById('errorMessage').textContent = message;
             const errorModal = new bootstrap.Modal(document.getElementById('errorModal'));
             errorModal.show();
+        }
+
+        // Mostra modal informando que o dispositivo já votou
+        function showDeviceBlockedModal(voteDate) {
+            const modalHTML = `
+                <div class="modal fade" id="deviceBlockedModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1">
+                    <div class="modal-dialog modal-dialog-centered">
+                        <div class="modal-content border-0 shadow-lg">
+                            <div class="modal-header bg-danger text-white border-0">
+                                <h5 class="modal-title">
+                                    <i class="bi bi-shield-x me-2"></i>
+                                    Dispositivo Já Votou
+                                </h5>
+                            </div>
+                            <div class="modal-body text-center p-4">
+                                <div class="mb-4">
+                                    <i class="bi bi-laptop text-danger" style="font-size: 4rem;"></i>
+                                </div>
+                                <h5 class="text-danger mb-3">Voto já registrado neste dispositivo!</h5>
+                                <p class="text-muted mb-3">
+                                    Este dispositivo/navegador já foi utilizado para votar na Feira de Profissões.
+                                </p>
+                                <div class="alert alert-warning d-flex align-items-center" role="alert">
+                                    <i class="bi bi-clock-history me-2"></i>
+                                    <div class="text-start">
+                                        <small><strong>Data do voto:</strong></small><br>
+                                        <small>${voteDate}</small>
+                                    </div>
+                                </div>
+                                <p class="text-muted small mb-0">
+                                    <i class="bi bi-info-circle me-1"></i>
+                                    Por medida de segurança, cada dispositivo pode votar apenas uma vez, mesmo com CPFs diferentes.
+                                </p>
+                            </div>
+                            <div class="modal-footer border-0 bg-light">
+                                <a href="placar.html" class="btn btn-primary">
+                                    <i class="bi bi-trophy-fill me-2"></i>
+                                    Ver Placar de Resultados
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            // Remove modal anterior se existir
+            const existingModal = document.getElementById('deviceBlockedModal');
+            if (existingModal) {
+                existingModal.remove();
+            }
+            
+            // Adiciona novo modal ao body
+            document.body.insertAdjacentHTML('beforeend', modalHTML);
+            
+            // Mostra o modal
+            const deviceBlockedModal = new bootstrap.Modal(document.getElementById('deviceBlockedModal'));
+            deviceBlockedModal.show();
         }
 
         function showToast(message, type = 'info', title = 'Notificação') {
@@ -895,6 +1038,12 @@
                             body: JSON.stringify({ cpf: currentCPF, id_turma: Number(classId) })
                         });
                         if (resp.ok) {
+                            // ============================================
+                            // MARCA O DISPOSITIVO COMO TENDO VOTADO
+                            // ============================================
+                            markDeviceAsVoted();
+                            console.log('✅ Voto registrado e dispositivo marcado como votante');
+                            
                             // Mostra modal de sucesso
                             showSuccessModal('🎉 Voto registrado com sucesso! Obrigado por participar da nossa feira de profissões.');
                             
