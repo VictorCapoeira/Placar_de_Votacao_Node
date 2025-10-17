@@ -206,6 +206,6 @@ exports.seed = async function(knex) {
       professor_turma: 'Renata Cristina Arruda Sampaio ',
       fotos_turma: '0072',
       id_turno: 3
-    },
+    }
   ]);
 };
