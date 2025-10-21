@@ -439,7 +439,7 @@ app.get('/api/check-cpf/:cpf', async (req, res) => {
                 canAccessPlacar: false 
             });
         }
-
+//rrr
         const [[vote]] = await pool.query('SELECT id_votos FROM votos WHERE id_usuario = ?', [user.id_usuario]);
         
         res.json({ 
