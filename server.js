@@ -12,6 +12,7 @@ const DB_HOST = process.env.DB_HOST || 'up-de-fra1-mysql-1.db.run-on-seenode.com
 const DB_USER = process.env.DB_USER || 'db_dtnidddiwulw';
 const DB_PASSWORD = process.env.DB_PASSWORD || 'cI8C9O2nSwZ2ZmHfgJW5phzi';
 const DB_NAME = process.env.DB_NAME || 'db_dtnidddiwulw';
+const DB_PORT = Number(process.env.DB_PORT || 11550);
 
 // Configuração básica via variáveis de ambiente
 // const PORT = process.env.PORT || 3000;
@@ -35,14 +36,14 @@ let pool = null;
 try {
     pool = mysql.createPool({
         host: DB_HOST,
+        port: DB_PORT,
         user: DB_USER,
         password: DB_PASSWORD,
         database: DB_NAME,
         waitForConnections: true,
         connectionLimit: 10,
         queueLimit: 0,
-        acquireTimeout: 60000,
-        timeout: 60000,
+        connectTimeout: 60000,
         enableKeepAlive: true,
         keepAliveInitialDelay: 0,
         ssl: {
@@ -163,7 +164,8 @@ app.get('/api/health', (_req, res) => {
 app.get('/api/db-test', async (req, res) => {
     try {
         console.log('🔍 Testando conexão com o banco...');
-        console.log(`Host: ${DB_HOST}`);
+    console.log(`Host: ${DB_HOST}`);
+    console.log(`Port: ${DB_PORT}`);
         console.log(`User: ${DB_USER}`);
         console.log(`Database: ${DB_NAME}`);
         
@@ -941,7 +943,8 @@ async function testDatabaseConnection() {
 
     try {
         console.log('🔍 Testando conexão com banco de dados...');
-        console.log(`📍 Host: ${DB_HOST}`);
+    console.log(`📍 Host: ${DB_HOST}`);
+    console.log(`🔌 Port: ${DB_PORT}`);
         console.log(`👤 User: ${DB_USER}`);
         console.log(`🗃️ Database: ${DB_NAME}`);
         
