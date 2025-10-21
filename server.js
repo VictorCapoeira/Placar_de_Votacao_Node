@@ -9,10 +9,12 @@ const app = express();
 
 // / Configuração básica via variáveis de ambiente
 const PORT = process.env.PORT || 80;
-const DB_HOST = process.env.DB_HOST || 'db_dtnidddiwulw ';
-const DB_USER = process.env.DB_USER || 'db_dtnidddiwulw ';
+
+const DB_HOST = process.env.DB_HOST || 'up-de-fra1-mysql-1.db.run-on-seenode.com';
+
+const DB_USER = process.env.DB_USER || 'db_dtnidddiwulw';
+
 const DB_PASSWORD = process.env.DB_PASSWORD || 'cI8C9O2nSwZ2ZmHfgJW5phzi';
-const DB_NAME = process.env.DB_NAME || 'sistema_de_votos';
 
 // Configuração básica via variáveis de ambiente
 // const PORT = process.env.PORT || 3000;
