@@ -237,7 +237,7 @@
         <nav class="navbar navbar-expand-lg navbar-dark py-3" style="background: linear-gradient(135deg, var(--primary) 0%, #003875 100%); box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);">
             <div class="container">
                 <a class="navbar-brand d-flex align-items-center" href="index.html" style="font-size: 1.5rem;">
-                    <i class="bi bi-mortarboard-fill me-3" style="font-size: 2rem; color: var(--secondary);"></i>
+                    <img src="/imagens/Sistema/logo.png" alt="Senac Logo" class="me-3" style="height: 50px; width: auto;">
                     <div>
                         <span class="fw-bold d-block">Feira de Profissões</span>
                         <small class="opacity-75" style="font-size: 0.75rem;">Dashboard Administrativo</small>
@@ -369,7 +369,7 @@
                             <a href="index.html" class="btn btn-outline-primary btn-sm">
                                 <i class="bi bi-star-fill me-1"></i>Votar
                             </a>
-                            <a href="placar.html" class="btn btn-primary btn-sm">
+                            <a href="placar.html" class="btn btn-primary btn-sm placar-link" data-turno="matutino">
                                 <i class="bi bi-trophy-fill me-1"></i>Placar
                             </a>
                         </div>
@@ -394,7 +394,7 @@
                             <a href="index.html" class="btn btn-outline-primary btn-sm">
                                 <i class="bi bi-star-fill me-1"></i>Votar
                             </a>
-                            <a href="placar.html" class="btn btn-primary btn-sm">
+                            <a href="placar.html" class="btn btn-primary btn-sm placar-link" data-turno="vespertino">
                                 <i class="bi bi-trophy-fill me-1"></i>Placar
                             </a>
                         </div>
@@ -419,7 +419,7 @@
                             <a href="index.html" class="btn btn-outline-primary btn-sm">
                                 <i class="bi bi-star-fill me-1"></i>Votar
                             </a>
-                            <a href="placar.html" class="btn btn-primary btn-sm">
+                            <a href="placar.html" class="btn btn-primary btn-sm placar-link" data-turno="noturno">
                                 <i class="bi bi-trophy-fill me-1"></i>Placar
                             </a>
                         </div>
@@ -444,7 +444,7 @@
                             <a href="index.html" class="btn btn-outline-primary btn-sm">
                                 <i class="bi bi-star-fill me-1"></i>Votar
                             </a>
-                            <a href="placar.html" class="btn btn-primary btn-sm">
+                            <a href="placar.html" class="btn btn-primary btn-sm placar-link" data-turno="geral">
                                 <i class="bi bi-trophy-fill me-1"></i>Placar Geral
                             </a>
                         </div>
@@ -708,6 +708,26 @@
             adminCPF = cpf;
             loadQuickStats();
         });
-    </script>
+        </script>
+        <script>
+            // Anexa turno e CPF admin aos links de placar
+            document.addEventListener('DOMContentLoaded', function(){
+                const urlParams = new URLSearchParams(window.location.search);
+                const cpf = urlParams.get('cpf') || localStorage.getItem('adminCPF');
+                document.querySelectorAll('a.placar-link').forEach(function(a){
+                    a.addEventListener('click', function(e){
+                        e.preventDefault();
+                        const turno = this.getAttribute('data-turno');
+                        let target = 'placar.html';
+                        const params = new URLSearchParams();
+                        if (cpf) params.set('cpf', cpf);
+                        if (turno && turno !== 'geral') params.set('turno', turno);
+                        const qs = params.toString();
+                        if (qs) target += '?' + qs;
+                        window.location.href = target;
+                    });
+                });
+            });
+        </script>
 </body>
 </html>
