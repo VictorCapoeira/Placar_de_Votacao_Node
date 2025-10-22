@@ -55,6 +55,46 @@ try {
     OPERATION_MODE = 'memory';
 }
 
+// Inicializa o banco automaticamente quando tabelas essenciais não existem
+async function ensureDatabaseInitialized() {
+    try {
+        if (!pool) return { initialized: false };
+        const [tables] = await pool.query(
+            `SELECT table_name FROM information_schema.tables WHERE table_schema = ? AND table_name IN ('usuario','turno','turma','votos')`,
+            [DB_NAME]
+        );
+        const existing = new Set(tables.map(t => t.TABLE_NAME || t.table_name));
+        const required = ['usuario', 'turno', 'turma', 'votos'];
+        const missing = required.filter(t => !existing.has(t));
+
+        if (missing.length === 0) {
+            console.log('🧱 Estrutura do banco OK (tabelas encontradas).');
+            return { initialized: true, created: false };
+        }
+
+        console.log(`🧩 Tabelas ausentes: ${missing.join(', ')} → executando migrations + seeds...`);
+        // Passa a configuração atual para o script de migração
+        process.env.DB_HOST = DB_HOST;
+        process.env.DB_PORT = String(DB_PORT);
+        process.env.DB_USER = DB_USER;
+        process.env.DB_PASSWORD = DB_PASSWORD;
+        process.env.DB_NAME = DB_NAME;
+        process.env.NODE_ENV = 'production';
+
+        const { initializeDatabase } = require('./migrate');
+        const ok = await initializeDatabase();
+        if (!ok) {
+            console.error('❌ Falha ao inicializar banco via migrations.');
+            return { initialized: false, created: false };
+        }
+        console.log('✅ Banco inicializado com sucesso (migrations + seeds).');
+        return { initialized: true, created: true };
+    } catch (err) {
+        console.error('❌ Erro ao validar/inicializar banco:', err.message);
+        return { initialized: false, error: err.message };
+    }
+}
+
 // Dados em memória para modo fallback
 function initMemoryData() {
     memoryData.turmas = [
@@ -177,6 +217,7 @@ app.get('/api/db-test', async (req, res) => {
             message: 'Conexão com banco estabelecida com sucesso!',
             config: {
                 host: DB_HOST,
+                port: DB_PORT,
                 user: DB_USER,
                 database: DB_NAME
             },
@@ -193,6 +234,7 @@ app.get('/api/db-test', async (req, res) => {
             code: error.code,
             config: {
                 host: DB_HOST,
+                port: DB_PORT,
                 user: DB_USER,
                 database: DB_NAME
             }
@@ -572,6 +614,7 @@ app.get('/api/turno-ativo', (req, res) => {
     res.json({ 
         turnoAtivo: TURNO_ATIVO,
         message: TURNO_ATIVO ? `Turno ativo: ${TURNO_ATIVO}` : 'Todos os turnos estão disponíveis'
+const DB_PORT = Number(process.env.DB_PORT || 11550);
     });
 });
 
@@ -595,19 +638,19 @@ app.post('/api/set-turno-ativo', async (req, res) => {
         console.log(`Tentativa de alteração não autorizada do turno ativo com CPF: ${cleanCPF}`);
         return res.status(403).json({ 
             error: 'Acesso negado. Apenas administradores podem alterar o turno ativo.',
-            code: 'ACCESS_DENIED'
-        });
-    }
-    
-    // Valida o turno
-    const turnosValidos = ['matutino', 'vespertino', 'noturno', null, 'geral'];
-    const turnoNormalizado = turno === 'geral' || turno === null ? null : turno;
-    
-    if (turno && !turnosValidos.includes(turno)) {
-        return res.status(400).json({ 
-            error: 'Turno inválido. Use: matutino, vespertino, noturno ou geral.' 
-        });
-    }
+        port: DB_PORT,
+        user: DB_USER,
+        password: DB_PASSWORD,
+        database: DB_NAME,
+        waitForConnections: true,
+        connectionLimit: 10,
+        queueLimit: 0,
+        connectTimeout: 60000,
+        enableKeepAlive: true,
+        keepAliveInitialDelay: 0,
+        ssl: {
+            rejectUnauthorized: false
+        }
     
     // Define o turno ativo globalmente
     TURNO_ATIVO = turnoNormalizado;
@@ -658,6 +701,7 @@ app.get('/api/turmas', async (req, res) => {
                     images,
                     imageSource: images[0].includes('placehold.co') ? 'placeholder' : 'local'
                 };
+        console.log(`Port: ${DB_PORT}`);
             });
         } else {
             // Modo banco de dados
@@ -669,6 +713,7 @@ app.get('/api/turmas', async (req, res) => {
                 LEFT JOIN turno tn ON t.id_turno = tn.id_turno
             `;
             
+                port: DB_PORT,
             let params = [];
             
             if (TURNO_ATIVO) {
@@ -949,10 +994,12 @@ async function testDatabaseConnection() {
         console.log(`🗃️ Database: ${DB_NAME}`);
         
         const [rows] = await pool.query('SELECT 1 as connected, NOW() as timestamp');
-        console.log('✅ Conexão com banco estabelecida com sucesso!');
+    console.log('✅ Conexão com banco estabelecida com sucesso!');
         console.log(`⏰ Timestamp do banco: ${rows[0].timestamp}`);
         OPERATION_MODE = 'database';
-        return true;
+    // Garante que a estrutura exista
+    await ensureDatabaseInitialized();
+    return true;
     } catch (error) {
         console.error('❌ ERRO na conexão com banco de dados:');
         console.error(`   Mensagem: ${error.message}`);
