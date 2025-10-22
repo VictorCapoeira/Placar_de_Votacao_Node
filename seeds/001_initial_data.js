@@ -114,7 +114,7 @@ exports.seed = async function(knex) {
       projeto_turma: 'Do virtual ao real: a formação do técnico de enfermagem na atualidade.',
       descricao_projeto_turma: 'Feira técnica de enfermagem com simulações realísticas de urgência e emergência, promovendo aprendizado prático, desenvolvimento técnico e psicológico dos estudantes.',
       professor_turma: 'Eduardo Alexandre',
-      fotos_turma: '20240074',
+      fotos_turma: '0072',
       id_turno: 3
     } 
   ]);
