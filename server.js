@@ -14,7 +14,7 @@ const DB_PASSWORD = process.env.DB_PASSWORD || 'cI8C9O2nSwZ2ZmHfgJW5phzi';
 const DB_NAME = process.env.DB_NAME || 'db_dtnidddiwulw';
 const DB_PORT = Number(process.env.DB_PORT || 11550);
 
-// Configuração básica via variáveis de ambiente
+// Configuração básica via variáveis de ambiente teste
 // const PORT = process.env.PORT || 3000;
 // const DB_HOST = process.env.DB_HOST || 'localhost';
 // const DB_USER = process.env.DB_USER || 'root';
@@ -440,7 +440,7 @@ app.get('/api/check-cpf/:cpf', async (req, res) => {
                 canAccessPlacar: false 
             });
         }
-//Teste
+//Teste teste
         const [[vote]] = await pool.query('SELECT id_votos FROM votos WHERE id_usuario = ?', [user.id_usuario]);
         
         res.json({ 
