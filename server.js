@@ -614,7 +614,6 @@ app.get('/api/turno-ativo', (req, res) => {
     res.json({ 
         turnoAtivo: TURNO_ATIVO,
         message: TURNO_ATIVO ? `Turno ativo: ${TURNO_ATIVO}` : 'Todos os turnos estão disponíveis'
-const DB_PORT = Number(process.env.DB_PORT || 11550);
     });
 });
 
@@ -638,20 +637,20 @@ app.post('/api/set-turno-ativo', async (req, res) => {
         console.log(`Tentativa de alteração não autorizada do turno ativo com CPF: ${cleanCPF}`);
         return res.status(403).json({ 
             error: 'Acesso negado. Apenas administradores podem alterar o turno ativo.',
-        port: DB_PORT,
-        user: DB_USER,
-        password: DB_PASSWORD,
-        database: DB_NAME,
-        waitForConnections: true,
-        connectionLimit: 10,
-        queueLimit: 0,
-        connectTimeout: 60000,
-        enableKeepAlive: true,
-        keepAliveInitialDelay: 0,
-        ssl: {
-            rejectUnauthorized: false
-        }
+            code: 'ACCESS_DENIED'
+        });
+    }
+
+    // Valida o turno
+    const turnosValidos = ['matutino', 'vespertino', 'noturno', null, 'geral'];
+    const turnoNormalizado = (turno === 'geral' || turno === null) ? null : turno;
     
+    if (turno && !turnosValidos.includes(turno)) {
+        return res.status(400).json({ 
+            error: 'Turno inválido. Use: matutino, vespertino, noturno ou geral.' 
+        });
+    }
+
     // Define o turno ativo globalmente
     TURNO_ATIVO = turnoNormalizado;
     
@@ -701,7 +700,6 @@ app.get('/api/turmas', async (req, res) => {
                     images,
                     imageSource: images[0].includes('placehold.co') ? 'placeholder' : 'local'
                 };
-        console.log(`Port: ${DB_PORT}`);
             });
         } else {
             // Modo banco de dados
@@ -713,7 +711,6 @@ app.get('/api/turmas', async (req, res) => {
                 LEFT JOIN turno tn ON t.id_turno = tn.id_turno
             `;
             
-                port: DB_PORT,
             let params = [];
             
             if (TURNO_ATIVO) {
