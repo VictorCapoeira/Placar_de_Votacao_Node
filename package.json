@@ -9,16 +9,13 @@
   },
   "scripts": {
     "start": "node server.js",
-    "start:mock": "node server-mock.js",
     "build": "echo 'No build step required for Node.js server'",
     "dev": "nodemon server.js",
     "db:init": "node migrate.js init",
     "db:migrate": "node migrate.js migrate",
     "db:seed": "node migrate.js seed",
     "db:rollback": "node migrate.js rollback",
-    "db:status": "node migrate.js status",
-    "db:reset": "node reset-db.js",
-    "db:test": "node db-diagnostic.js"
+    "db:status": "node migrate.js status"
   },
   "dependencies": {
     "express": "^4.19.2",

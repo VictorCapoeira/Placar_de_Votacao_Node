@@ -515,7 +515,7 @@
         <nav class="navbar navbar-expand-lg navbar-dark py-3" style="background: linear-gradient(135deg, var(--primary) 0%, #003875 100%); box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);">
             <div class="container">
                 <a class="navbar-brand d-flex align-items-center" href="#" style="font-size: 1.5rem;">
-                    <i class="bi bi-mortarboard-fill me-3" style="font-size: 2rem; color: var(--secondary);"></i>
+                    <img src="/imagens/Sistema/logo.png" alt="Senac Logo" class="me-3" style="height: 50px; width: auto;">
                     <div>
                         <span class="fw-bold d-block">Feira de Profissões</span>
                         <small class="opacity-75" style="font-size: 0.75rem;">Placar de Resulados</small>
@@ -600,13 +600,14 @@
         
         <!-- Conteúdo do Placar (oculto inicialmente) -->
         <div id="placarSection" style="display: none;">
-            <div class="row mb-5">
+            <div class="row mb-4">
                 <div class="col-12 text-center">
                     <div class="hero-section py-4">
                         
-                        <h1 class="display-4 fw-bold text-primary mb-3" style="text-shadow: 2px 2px 4px rgba(0,0,0,0.1);">
+                        <h1 class="display-4 fw-bold text-primary mb-3" style="text-shadow: 2px 2px 4px rgba(0,0,0,0.1);" id="placarTitle">
                             Placar de Votação
                         </h1>
+                        <p class="text-muted" id="placarSubtitle">Todos os turnos</p>
             
                     </div>
             
@@ -746,25 +747,28 @@
                 // Remove formatação
                 const cleanCPF = cpf.replace(/\D/g, '');
                 
-                // Tenta acessar o placar com o CPF (sem parâmetros de turno - usa turno ativo global)
-                const resp = await fetch(`/api/placar?cpf=${cleanCPF}`);
+                // Respeita filtro de turno vindo pela URL (se houver)
+                const params = new URLSearchParams(window.location.search);
+                const turnoParam = params.get('turno');
+                let url = `/api/placar?cpf=${cleanCPF}`;
+                if (turnoParam && turnoParam !== 'geral') {
+                    url += `&turno=${encodeURIComponent(turnoParam)}`;
+                }
+                const resp = await fetch(url);
                 
                 if (resp.ok) {
                     const data = await resp.json();
                     authenticatedCPF = cleanCPF;
                     
-                    // Atualiza título do placar baseado no turno
-                    updatePlacarTitle(data.turnoAtivo, data.filtroAtivo);
+                    // Atualiza título do placar baseado no turno retornado
+                    updatePlacarTitle(data.turnoAtivo);
                     
                     showPlacar();
                     renderPodium(data.results, data.total);
                     renderTable(data.results, data.total);
                     document.getElementById('totalVotos').textContent = String(data.total || 0);
                     
-                    // Adiciona badge indicando o turno se houver filtro
-                    if (data.filtroAtivo) {
-                        addTurnoBadge(data.turnoAtivo);
-                    }
+                    // Badge removida: controle de turno é exclusivo do dashboard
                     
                     // NÃO chama atualização automática do placar
                     // O pódio só é renderizado ao autenticar ou atualizar manualmente
@@ -781,51 +785,19 @@
             }
         }
 
-        // Atualiza o título do placar baseado no turno
-        function updatePlacarTitle(turno, filtroAtivo) {
-            const titleElement = document.querySelector('.display-4');
-            if (filtroAtivo && turno && turno !== 'geral') {
-                const turnoCapitalizado = turno.charAt(0).toUpperCase() + turno.slice(1);
-                titleElement.textContent = `Placar de Votação - ${turnoCapitalizado}`;
-            } else {
-                titleElement.textContent = 'Placar de Votação - Geral';
-            }
-        }
-
-        // Adiciona badge do turno
-        function addTurnoBadge(turno) {
-            const heroSection = document.querySelector('.hero-section .d-flex');
-            const existingBadge = heroSection.querySelector('.turno-badge');
-            if (existingBadge) {
-                existingBadge.remove();
-            }
+        // Atualiza o título do placar baseado no turno ativo
+        function updatePlacarTitle(turnoAtivo) {
+            const titleElement = document.getElementById('placarTitle');
+            const subtitleElement = document.getElementById('placarSubtitle');
             
-            const turnoCapitalizado = turno.charAt(0).toUpperCase() + turno.slice(1);
-            const badge = document.createElement('span');
-            badge.className = 'badge turno-badge px-3 py-2 rounded-pill';
-            badge.style.backgroundColor = getTurnoColor(turno);
-            badge.style.color = 'white';
-            badge.innerHTML = `<i class="bi ${getTurnoIcon(turno)} me-1"></i>Turno ${turnoCapitalizado}`;
-            heroSection.appendChild(badge);
-        }
-
-        // Funções auxiliares para turnos
-        function getTurnoColor(turno) {
-            const colors = {
-                'matutino': '#FFC107',
-                'vespertino': '#FF9800', 
-                'noturno': '#673AB7'
-            };
-            return colors[turno] || '#6c757d';
-        }
-
-        function getTurnoIcon(turno) {
-            const icons = {
-                'matutino': 'bi-sun-fill',
-                'vespertino': 'bi-sun',
-                'noturno': 'bi-moon-stars-fill'
-            };
-            return icons[turno] || 'bi-clock';
+            if (turnoAtivo && turnoAtivo !== 'geral') {
+                const turnoCapitalizado = turnoAtivo.charAt(0).toUpperCase() + turnoAtivo.slice(1);
+                titleElement.textContent = `Placar de Votação - ${turnoCapitalizado}`;
+                subtitleElement.textContent = `Exibindo apenas turmas do turno ${turnoCapitalizado}`;
+            } else {
+                titleElement.textContent = 'Placar de Votação';
+                subtitleElement.textContent = 'Todos os turnos';
+            }
         }
         
         // Exibe erro de autenticação
@@ -862,24 +834,25 @@
             }
             
             try {
-                // Busca dados atualizados do servidor
-                const resp = await fetch(`/api/placar?cpf=${authenticatedCPF}`);
+                // Busca dados do servidor respeitando parâmetro "turno" da URL (se houver)
+                const params = new URLSearchParams(window.location.search);
+                const turnoParam = params.get('turno');
+                let url = `/api/placar?cpf=${authenticatedCPF}`;
+                if (turnoParam && turnoParam !== 'geral') {
+                    url += `&turno=${encodeURIComponent(turnoParam)}`;
+                }
+                const resp = await fetch(url);
                 
                 if (resp.ok) {
                     const data = await resp.json();
                     
-                    // Atualiza título do placar baseado no turno
-                    updatePlacarTitle(data.turnoAtivo, data.filtroAtivo);
+                    // Atualiza título do placar baseado no turno ativo
+                    updatePlacarTitle(data.turnoAtivo);
                     
                     // Renderiza pódio e tabela com dados atualizados
                     renderPodium(data.results, data.total);
                     renderTable(data.results, data.total);
                     document.getElementById('totalVotos').textContent = String(data.total || 0);
-                    
-                    // Atualiza badge do turno se houver filtro
-                    if (data.filtroAtivo) {
-                        addTurnoBadge(data.turnoAtivo);
-                    }
                 } else {
                     console.error('Erro ao carregar placar:', resp.status);
                 }
@@ -888,14 +861,43 @@
             }
         }
         
+        // Atualiza o título do placar baseado no turno ativo
+        function updatePlacarTitle(turnoAtivo) {
+            const titleElement = document.getElementById('placarTitle');
+            const subtitleElement = document.getElementById('placarSubtitle');
+            
+            if (turnoAtivo) {
+                const turnoCapitalizado = turnoAtivo.charAt(0).toUpperCase() + turnoAtivo.slice(1);
+                titleElement.textContent = `Placar de Votação - ${turnoCapitalizado}`;
+                subtitleElement.textContent = `Exibindo apenas turmas do turno ${turnoCapitalizado}`;
+            } else {
+                titleElement.textContent = 'Placar de Votação';
+                subtitleElement.textContent = 'Todos os turnos';
+            }
+        }
+        
         // Event listeners
-        document.addEventListener('DOMContentLoaded', function() {
+        document.addEventListener('DOMContentLoaded', async function() {
             // Formatação automática do CPF
             const cpfInput = document.getElementById('adminCpf');
             cpfInput.addEventListener('input', function(e) {
                 e.target.value = formatCPF(e.target.value);
                 hideAuthError();
             });
+            
+            // Se vier CPF pela URL, autentica automaticamente
+            const params = new URLSearchParams(window.location.search);
+            const cpfFromUrl = params.get('cpf');
+            if (cpfFromUrl && isValidCPF(cpfFromUrl)) {
+                // Preenche e autentica
+                cpfInput.value = formatCPF(cpfFromUrl);
+                const ok = await authenticateAdmin(cpfFromUrl);
+                if (ok) {
+                    // Após autenticar, carrega placar considerando possível turno na URL
+                    await loadScoreboard();
+                    return; // evita bind do submit redundante
+                }
+            }
             
             // Submit do formulário de autenticação
             document.getElementById('authForm').addEventListener('submit', async function(e) {
@@ -920,7 +922,10 @@
                 submitBtn.innerHTML = '<i class="bi bi-hourglass-split me-2"></i>Verificando...';
                 
                 try {
-                    await authenticateAdmin(cpfValue);
+                    const ok = await authenticateAdmin(cpfValue);
+                    if (ok) {
+                        await loadScoreboard();
+                    }
                 } finally {
                     submitBtn.disabled = false;
                     submitBtn.innerHTML = originalText;

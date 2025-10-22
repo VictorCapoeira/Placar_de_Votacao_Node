@@ -7,14 +7,14 @@ const mysql = require('mysql2/promise');
 
 const app = express();
 
-// Configuração básica via variáveis de ambiente (com padrões para desenvolvimento web)
 const PORT = process.env.PORT || 80;
 const DB_HOST = process.env.DB_HOST || 'up-de-fra1-mysql-1.db.run-on-seenode.com';
 const DB_USER = process.env.DB_USER || 'db_dtnidddiwulw';
 const DB_PASSWORD = process.env.DB_PASSWORD || 'cI8C9O2nSwZ2ZmHfgJW5phzi';
 const DB_NAME = process.env.DB_NAME || 'db_dtnidddiwulw';
+const DB_PORT = Number(process.env.DB_PORT || 11550);
 
-// Configuração básica via variáveis de ambiente (com padrões para desenvolvimento local)
+// Configuração básica via variáveis de ambiente teste
 // const PORT = process.env.PORT || 3000;
 // const DB_HOST = process.env.DB_HOST || 'localhost';
 // const DB_USER = process.env.DB_USER || 'root';
@@ -36,14 +36,14 @@ let pool = null;
 try {
     pool = mysql.createPool({
         host: DB_HOST,
+        port: DB_PORT,
         user: DB_USER,
         password: DB_PASSWORD,
         database: DB_NAME,
         waitForConnections: true,
         connectionLimit: 10,
         queueLimit: 0,
-        acquireTimeout: 60000,
-        timeout: 60000,
+        connectTimeout: 60000,
         enableKeepAlive: true,
         keepAliveInitialDelay: 0,
         ssl: {
@@ -164,7 +164,8 @@ app.get('/api/health', (_req, res) => {
 app.get('/api/db-test', async (req, res) => {
     try {
         console.log('🔍 Testando conexão com o banco...');
-        console.log(`Host: ${DB_HOST}`);
+    console.log(`Host: ${DB_HOST}`);
+    console.log(`Port: ${DB_PORT}`);
         console.log(`User: ${DB_USER}`);
         console.log(`Database: ${DB_NAME}`);
         
@@ -439,7 +440,7 @@ app.get('/api/check-cpf/:cpf', async (req, res) => {
                 canAccessPlacar: false 
             });
         }
-//rrr
+//Teste teste
         const [[vote]] = await pool.query('SELECT id_votos FROM votos WHERE id_usuario = ?', [user.id_usuario]);
         
         res.json({ 
@@ -826,7 +827,7 @@ let TURNO_ATIVO = null; // null = todos os turnos, ou 'matutino', 'vespertino', 
 
 // GET /api/placar -> retorna votos agregados por turma (ordem decrescente)
 app.get('/api/placar', async (req, res) => {
-    const { cpf } = req.query;
+    const { cpf, turno } = req.query;
     
     if (!cpf || !isValidCPF(cpf)) {
         return res.status(401).json({ 
@@ -848,14 +849,17 @@ app.get('/api/placar', async (req, res) => {
     try {
         let results = [];
         let total = 0;
+        
+        // Filtro de turno: prioriza parâmetro da query, senão usa TURNO_ATIVO
+        const turnoFiltro = turno || TURNO_ATIVO;
 
         // Modo memória
         if (OPERATION_MODE === 'memory') {
             let filteredTurmas = memoryData.turmas;
             
-            if (TURNO_ATIVO) {
+            if (turnoFiltro) {
                 filteredTurmas = memoryData.turmas.filter(t => 
-                    t.nome_turno.toLowerCase() === TURNO_ATIVO.toLowerCase()
+                    t.nome_turno.toLowerCase() === turnoFiltro.toLowerCase()
                 );
             }
             
@@ -881,9 +885,9 @@ app.get('/api/placar', async (req, res) => {
             
             let params = [];
             
-            if (TURNO_ATIVO) {
+            if (turnoFiltro) {
                 sql += ` WHERE LOWER(tn.nome_turno) = LOWER(?)`;
-                params.push(TURNO_ATIVO);
+                params.push(turnoFiltro);
             }
             
             sql += `
@@ -900,13 +904,15 @@ app.get('/api/placar', async (req, res) => {
             }));
         }
         
-        console.log(`Placar acessado pelo administrador (CPF: ${cleanCPF}, Modo: ${OPERATION_MODE}${TURNO_ATIVO ? `, Turno ativo: ${TURNO_ATIVO}` : ', Todos os turnos'})`);
+        const filtroInfo = turno ? `Filtro: ${turno}` : (TURNO_ATIVO ? `Turno ativo: ${TURNO_ATIVO}` : 'Todos os turnos');
+        console.log(`Placar acessado pelo administrador (CPF: ${cleanCPF}, Modo: ${OPERATION_MODE}, ${filtroInfo})`);
+        
         res.json({ 
             total, 
             results,
-            turno: TURNO_ATIVO || 'geral',
-            filtroAtivo: !!TURNO_ATIVO,
-            turnoAtivo: TURNO_ATIVO,
+            turno: turnoFiltro || 'geral',
+            filtroAtivo: !!turnoFiltro,
+            turnoAtivo: turnoFiltro,
             mode: OPERATION_MODE
         });
     } catch (err) {
@@ -937,7 +943,8 @@ async function testDatabaseConnection() {
 
     try {
         console.log('🔍 Testando conexão com banco de dados...');
-        console.log(`📍 Host: ${DB_HOST}`);
+    console.log(`📍 Host: ${DB_HOST}`);
+    console.log(`🔌 Port: ${DB_PORT}`);
         console.log(`👤 User: ${DB_USER}`);
         console.log(`🗃️ Database: ${DB_NAME}`);
         
