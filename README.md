@@ -193,32 +193,3 @@ DB_USER=usuario-producao
 DB_PASSWORD=senha-segura
 DB_NAME=banco-producao
 ```
-
-## 🤝 Contribuição
-
-Contribuições são bem-vindas! Para contribuir:
-
-1. Faça um Fork do projeto
-2. Crie uma branch para sua feature (`git checkout -b feature/MinhaFeature`)
-3. Commit suas mudanças (`git commit -m 'Add: MinhaFeature'`)
-4. Push para a branch (`git push origin feature/MinhaFeature`)
-5. Abra um Pull Request
-
-## 📄 Licença
-
-Este projeto foi desenvolvido para a **Feira de Profissões do SENAC** e está disponível para uso educacional e institucional.
-
-## 👨‍💻 Desenvolvedor
-
-**Victor Capoeira**
-- GitHub: [@VictorCapoeira](https://github.com/VictorCapoeira)
-
----
-
-<div align="center">
-
-### 🏆 Feito com ❤️ para o SENAC
-
-*Sistema de Votação da Feira de Profissões - Conectando talento e inovação*
-
-</div>
